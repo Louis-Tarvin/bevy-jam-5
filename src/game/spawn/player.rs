@@ -1,10 +1,12 @@
 //! Spawn the player.
 
+use avian3d::{collision::Collider, dynamics::rigid_body::RigidBody};
 use bevy::prelude::*;
 
 use crate::{
     game::{
         assets::{HandleMap, ObjectKey},
+        interact::InteractionController,
         movement::{MovementController, Velocity},
     },
     screen::Screen,
@@ -39,6 +41,7 @@ fn spawn_player(
                 ..Default::default()
             },
             MovementController::new(50.0, 0.5, 5.0, 100.0),
+            InteractionController::new(1.0),
             Velocity::default(),
             StateScoped(Screen::Playing),
         ))

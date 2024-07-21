@@ -4,7 +4,7 @@ use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::AppSet;
 
-use super::spawn::player::PlayerTurret;
+use super::spawn::{asteroid::Asteroid, player::PlayerTurret};
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
@@ -21,6 +21,7 @@ pub(super) fn plugin(app: &mut App) {
         (
             (update_velocity, apply_velocity).chain(),
             rotate_towards_mouse,
+            asteroid_rotation,
         )
             .in_set(AppSet::Update),
     );
@@ -36,7 +37,6 @@ pub struct MovementController {
     mouse_world_pos: Vec2,
     thrust: Vec2,
     shoot: bool,
-    interact: bool,
 }
 impl MovementController {
     pub fn new(
@@ -149,5 +149,16 @@ fn rotate_towards_mouse(
                 rotation_direction * controller.rotation_speed * rotation * time.delta_seconds(),
             ));
         }
+    }
+}
+
+const ASTEROID_ROTATION_SPEED: f32 = 0.1;
+
+fn asteroid_rotation(mut query: Query<(&Asteroid, &mut Transform)>, time: Res<Time>) {
+    for (asteroid, mut transform) in query.iter_mut() {
+        transform.rotate(Quat::from_axis_angle(
+            asteroid.rotation_axis,
+            time.delta_seconds() * ASTEROID_ROTATION_SPEED,
+        ));
     }
 }

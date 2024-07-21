@@ -8,7 +8,9 @@ use crate::ui::prelude::*;
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Title), enter_title);
 
+    app.insert_resource(ClearColor(Color::BLACK));
     app.register_type::<TitleAction>();
+
     app.add_systems(Update, handle_title_action.run_if(in_state(Screen::Title)));
 }
 

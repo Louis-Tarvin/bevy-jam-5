@@ -11,6 +11,8 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Playing), enter_playing);
     app.add_systems(OnExit(Screen::Playing), exit_playing);
 
+    app.insert_resource(ClearColor(Color::BLACK));
+
     app.add_systems(
         Update,
         return_to_title_screen

@@ -6,13 +6,14 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.14", features = ["wayland"] }
-bevy-inspector-egui = "0.25"
+bevy-inspector-egui = { version = "0.25", optional = true}
 # Disable low-severity logs at compile time for performance.
 log = { version = "0.4", features = [
     "max_level_debug",
     "release_max_level_warn",
 ] }
 rand = "0.8"
+avian3d = "0.1"
 
 [features]
 default = [
@@ -23,9 +24,11 @@ dev = [
     # Improve compile times for dev builds by linking Bevy as a dynamic library.
     "bevy/dynamic_linking",
     "bevy/bevy_dev_tools",
+    "avian3d/debug-plugin"
 ]
 dev_native = [
     "dev",
+    "bevy-inspector-egui",
     # Enable asset hot reloading for native dev builds.
     "bevy/file_watcher",
     # Enable embedded asset hot reloading for native dev builds.
