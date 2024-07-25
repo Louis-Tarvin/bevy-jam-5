@@ -6,10 +6,12 @@ use bevy::prelude::*;
 pub mod assets;
 pub mod audio;
 pub mod collision;
+mod combat;
+pub mod gameplay;
 mod interact;
 mod movement;
+pub mod phase;
 pub mod spawn;
-pub mod state;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -17,8 +19,10 @@ pub(super) fn plugin(app: &mut App) {
         audio::plugin,
         assets::plugin,
         movement::plugin,
-        state::plugin,
+        phase::plugin,
         interact::plugin,
         spawn::plugin,
+        gameplay::plugin,
+        combat::plugin,
     ));
 }

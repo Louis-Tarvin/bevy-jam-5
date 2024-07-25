@@ -6,7 +6,10 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.14", features = ["wayland"] }
-bevy-inspector-egui = { version = "0.25", optional = true}
+bevy-inspector-egui = { version = "0.25.1", default-features = false, features = [
+    "bevy_pbr",
+    "bevy_render"
+]}
 # Disable low-severity logs at compile time for performance.
 log = { version = "0.4", features = [
     "max_level_debug",
@@ -28,7 +31,6 @@ dev = [
 ]
 dev_native = [
     "dev",
-    "bevy-inspector-egui",
     # Enable asset hot reloading for native dev builds.
     "bevy/file_watcher",
     # Enable embedded asset hot reloading for native dev builds.
@@ -83,3 +85,6 @@ inherits = "release"
 opt-level = 3
 # Keep debug information in the binary.
 strip = "none"
+
+[patch.crates-io]
+bevy-inspector-egui = { git = "https://github.com/mgi388/bevy-inspector-egui.git", branch = "manage_clipboard-fix" }

@@ -1,10 +1,10 @@
 //! Handle player input and translate it into movement.
 
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 
 use crate::AppSet;
 
-use super::spawn::{asteroid::Asteroid, player::PlayerTurret};
+use super::spawn::asteroid::Asteroid;
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
@@ -18,12 +18,7 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<Velocity>();
     app.add_systems(
         Update,
-        (
-            (update_velocity, apply_velocity).chain(),
-            rotate_towards_mouse,
-            asteroid_rotation,
-        )
-            .in_set(AppSet::Update),
+        ((update_velocity, apply_velocity).chain(), asteroid_rotation).in_set(AppSet::Update),
     );
 }
 
@@ -32,23 +27,14 @@ pub(super) fn plugin(app: &mut App) {
 pub struct MovementController {
     thrust_multiplier: f32,
     friction: f32,
-    rotation_speed: f32,
     velocity_limit: f32,
-    mouse_world_pos: Vec2,
     thrust: Vec2,
-    shoot: bool,
 }
 impl MovementController {
-    pub fn new(
-        thrust_multiplier: f32,
-        friction: f32,
-        rotation_speed: f32,
-        velocity_limit: f32,
-    ) -> Self {
+    pub fn new(thrust_multiplier: f32, friction: f32, velocity_limit: f32) -> Self {
         Self {
             thrust_multiplier,
             friction,
-            rotation_speed,
             velocity_limit,
             ..Default::default()
         }
@@ -57,26 +43,8 @@ impl MovementController {
 
 fn record_movement_controller(
     input: Res<ButtonInput<KeyCode>>,
-    camera: Query<(&Camera, &GlobalTransform)>,
-    window: Query<&Window, With<PrimaryWindow>>,
     mut controller_query: Query<&mut MovementController>,
 ) {
-    // Record mouse world position.
-    let (camera, camera_transform) = camera.single();
-    let window = window.single();
-
-    if let Some(ray) = window
-        .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
-    {
-        if let Some(distance) = ray.intersect_plane(Vec3::ZERO, InfinitePlane3d::new(Vec3::Z)) {
-            let world_position = ray.get_point(distance);
-            for mut controller in &mut controller_query {
-                controller.mouse_world_pos = world_position.truncate();
-            }
-        }
-    }
-
     // Collect directional input.
     let mut intent = Vec2::ZERO;
     if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) {
@@ -124,31 +92,6 @@ fn update_velocity(mut query: Query<(&MovementController, &mut Velocity)>, time:
 fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
     for (mut transform, velocity) in query.iter_mut() {
         transform.translation += Vec3::new(velocity.0.x, velocity.0.y, 0.0) * time.delta_seconds();
-    }
-}
-
-fn rotate_towards_mouse(
-    ship_query: Query<(&GlobalTransform, &MovementController)>,
-    mut turret_query: Query<&mut Transform, With<PlayerTurret>>,
-    time: Res<Time>,
-) {
-    for (global_transform, controller) in ship_query.iter() {
-        let mut transform = turret_query
-            .get_single_mut()
-            .expect("Expected single turret");
-        let target_direction = (controller.mouse_world_pos
-            - global_transform.translation().truncate())
-        .normalize_or_zero()
-        .extend(0.0);
-        let current_direction = transform.rotation * Vec3::Y;
-        let rotation = current_direction.angle_between(target_direction);
-        if rotation > 0.0 {
-            let rotation_direction = current_direction.cross(target_direction).z;
-            let rotation_direction = if rotation_direction > 0.0 { 1.0 } else { -1.0 };
-            transform.rotate(Quat::from_rotation_z(
-                rotation_direction * controller.rotation_speed * rotation * time.delta_seconds(),
-            ));
-        }
     }
 }
 

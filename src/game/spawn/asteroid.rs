@@ -2,9 +2,12 @@ use avian3d::collision::{Collider, CollisionLayers, LayerMask};
 use bevy::prelude::*;
 use rand::Rng;
 
-use crate::game::{
-    assets::{HandleMap, ObjectKey},
-    collision::CollisionLayer,
+use crate::{
+    game::{
+        assets::{HandleMap, ObjectKey},
+        collision::CollisionLayer,
+    },
+    screen::Screen,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -53,5 +56,6 @@ fn spawn_asteroid(
         },
         Collider::sphere(5.0),
         CollisionLayers::new([CollisionLayer::Asteroid], LayerMask::NONE),
+        StateScoped(Screen::Playing),
     ));
 }

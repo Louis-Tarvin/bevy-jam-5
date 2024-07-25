@@ -17,7 +17,13 @@ impl Plugin for AppPlugin {
         // Order new `AppStep` variants by adding them here:
         app.configure_sets(
             Update,
-            (AppSet::TickTimers, AppSet::RecordInput, AppSet::Update).chain(),
+            (
+                AppSet::TickTimers,
+                AppSet::RecordInput,
+                AppSet::Update,
+                AppSet::PostUpdate,
+            )
+                .chain(),
         );
 
         // Spawn the main camera.
@@ -70,15 +76,17 @@ enum AppSet {
     TickTimers,
     /// Record player input.
     RecordInput,
-    /// Do everything else (consider splitting this into further variants).
+    /// Most game logic happens here
     Update,
+    /// Stuff that needs to happen at the end
+    PostUpdate,
 }
 
 fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Name::new("Camera"),
         Camera3dBundle {
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 200.0)),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 150.0)),
             ..Default::default()
         },
         // Render all UI to this camera.
