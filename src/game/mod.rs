@@ -24,5 +24,6 @@ pub(super) fn plugin(app: &mut App) {
         spawn::plugin,
         gameplay::plugin,
         combat::plugin,
+        collision::plugin,
     ));
 }

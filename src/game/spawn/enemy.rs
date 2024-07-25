@@ -1,7 +1,14 @@
+use avian3d::{
+    collision::{Collider, CollisionLayers, LayerMask, Sensor},
+    dynamics::rigid_body::RigidBody,
+};
 use bevy::prelude::*;
 
 use crate::{
-    game::assets::{HandleMap, ObjectKey},
+    game::{
+        assets::{HandleMap, ObjectKey},
+        collision::CollisionLayer,
+    },
     screen::Screen,
     AppSet,
 };
@@ -60,6 +67,13 @@ fn spawn_enemy(
             transform: Transform::from_translation(trigger.event().position),
             ..Default::default()
         },
+        Collider::sphere(1.0),
+        CollisionLayers::new(
+            [CollisionLayer::Enemy],
+            LayerMask::from(CollisionLayer::Bullet),
+        ),
+        Sensor,
+        RigidBody::Kinematic,
         StateScoped(Screen::Playing),
     ));
 }

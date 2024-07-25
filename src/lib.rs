@@ -7,6 +7,7 @@ mod ui;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
+    core_pipeline::bloom::BloomSettings,
     prelude::*,
 };
 
@@ -87,6 +88,10 @@ fn spawn_camera(mut commands: Commands) {
         Name::new("Camera"),
         Camera3dBundle {
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 150.0)),
+            camera: Camera {
+                hdr: true,
+                ..Default::default()
+            },
             ..Default::default()
         },
         // Render all UI to this camera.
@@ -96,5 +101,6 @@ fn spawn_camera(mut commands: Commands) {
         // [ui node outlines](https://bevyengine.org/news/bevy-0-14/#ui-node-outline-gizmos)
         // for debugging. So it's good to have this here for future-proofing.
         IsDefaultUiCamera,
+        BloomSettings::OLD_SCHOOL,
     ));
 }

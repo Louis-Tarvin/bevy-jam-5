@@ -6,6 +6,7 @@ use bevy::prelude::*;
 
 pub mod asteroid;
 pub mod building;
+pub mod bullet;
 pub mod enemy;
 pub mod level;
 pub mod player;
@@ -17,5 +18,6 @@ pub(super) fn plugin(app: &mut App) {
         asteroid::plugin,
         building::plugin,
         enemy::plugin,
+        bullet::plugin,
     ));
 }

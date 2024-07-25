@@ -1,3 +1,6 @@
+use std::time::Duration;
+
+use avian3d::collision::contact_reporting::Collision;
 use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::AppSet;
@@ -8,12 +11,20 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<CombatController>();
     app.add_systems(Update, tick_attack_timer.in_set(AppSet::TickTimers));
     app.add_systems(Update, record_combat_controller.in_set(AppSet::RecordInput));
-    app.add_systems(Update, rotate_towards_mouse.in_set(AppSet::Update));
+    app.add_systems(
+        Update,
+        (rotate_towards_mouse, shoot).chain().in_set(AppSet::Update),
+    );
+    app.add_systems(
+        Update,
+        handle_enemy_bullet_collision.in_set(AppSet::PostUpdate),
+    );
 }
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
 pub struct CombatController {
+    attack_time: f32,
     attack_timer: Timer,
     rotation_speed: f32,
     mouse_world_pos: Vec2,
@@ -22,7 +33,8 @@ pub struct CombatController {
 impl CombatController {
     pub fn new(attack_time: f32, rotation_speed: f32) -> Self {
         Self {
-            attack_timer: Timer::from_seconds(attack_time, TimerMode::Repeating),
+            attack_time,
+            attack_timer: Timer::from_seconds(attack_time, TimerMode::Once),
             rotation_speed,
             mouse_world_pos: Vec2::ZERO,
             shoot: false,
@@ -86,5 +98,46 @@ fn rotate_towards_mouse(
                 rotation_direction * controller.rotation_speed * rotation * time.delta_seconds(),
             ));
         }
+    }
+}
+
+#[derive(Event, Debug)]
+pub struct ShootEvent {
+    pub position: Vec3,
+    pub direction: Vec3,
+}
+
+fn shoot(
+    mut ship_query: Query<&mut CombatController>,
+    turret_query: Query<(&GlobalTransform, &Transform), With<PlayerTurret>>,
+    mut commands: Commands,
+) {
+    for mut controller in ship_query.iter_mut() {
+        let attack_time = controller.attack_time;
+        if controller.shoot && controller.attack_timer.finished() {
+            controller
+                .attack_timer
+                .set_duration(Duration::from_secs_f32(attack_time));
+            controller.attack_timer.reset();
+            for (global_transform, transform) in turret_query.iter() {
+                let mut position = global_transform.translation();
+                position.z = -3.0;
+                let direction = transform.rotation * Vec3::Y;
+                commands.trigger(ShootEvent {
+                    position,
+                    direction,
+                });
+            }
+        }
+    }
+}
+
+fn handle_enemy_bullet_collision(
+    mut collision_event_reader: EventReader<Collision>,
+    mut commands: Commands,
+) {
+    for Collision(contacts) in collision_event_reader.read() {
+        commands.entity(contacts.entity1).despawn_recursive();
+        commands.entity(contacts.entity2).despawn_recursive();
     }
 }
