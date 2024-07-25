@@ -97,6 +97,7 @@ pub enum ObjectKey {
     Asteroid,
     Decoy,
     Enemy,
+    Station,
 }
 
 impl AssetKey for ObjectKey {
@@ -126,6 +127,10 @@ impl FromWorld for HandleMap<ObjectKey> {
             (
                 ObjectKey::Enemy,
                 asset_server.load("objects/enemy.glb#Scene0"),
+            ),
+            (
+                ObjectKey::Station,
+                asset_server.load("objects/wheel.glb#Scene0"),
             ),
         ]
         .into()

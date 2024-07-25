@@ -4,8 +4,6 @@ use bevy::prelude::*;
 
 use crate::AppSet;
 
-use super::spawn::asteroid::Asteroid;
-
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
     app.register_type::<MovementController>();
@@ -18,7 +16,9 @@ pub(super) fn plugin(app: &mut App) {
     app.register_type::<Velocity>();
     app.add_systems(
         Update,
-        ((update_velocity, apply_velocity).chain(), asteroid_rotation).in_set(AppSet::Update),
+        (update_velocity, apply_velocity)
+            .chain()
+            .in_set(AppSet::Update),
     );
 }
 
@@ -92,16 +92,5 @@ fn update_velocity(mut query: Query<(&MovementController, &mut Velocity)>, time:
 fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
     for (mut transform, velocity) in query.iter_mut() {
         transform.translation += Vec3::new(velocity.0.x, velocity.0.y, 0.0) * time.delta_seconds();
-    }
-}
-
-const ASTEROID_ROTATION_SPEED: f32 = 0.1;
-
-fn asteroid_rotation(mut query: Query<(&Asteroid, &mut Transform)>, time: Res<Time>) {
-    for (asteroid, mut transform) in query.iter_mut() {
-        transform.rotate(Quat::from_axis_angle(
-            asteroid.rotation_axis,
-            time.delta_seconds() * ASTEROID_ROTATION_SPEED,
-        ));
     }
 }

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_health_bar3d::configuration::{BarHeight, BarSettings, Percentage};
 
 use crate::{
     game::assets::{HandleMap, ObjectKey},
@@ -27,6 +28,22 @@ pub struct SpawnBuilding {
 #[reflect(Component)]
 pub struct Destructable {
     pub health: f32,
+    max_health: f32,
+}
+impl Destructable {
+    pub fn new(health: f32) -> Self {
+        debug_assert!(health > 0.0);
+        Self {
+            health,
+            max_health: health,
+        }
+    }
+}
+
+impl Percentage for Destructable {
+    fn value(&self) -> f32 {
+        self.health / self.max_health
+    }
 }
 
 fn spawn_building(
@@ -39,13 +56,19 @@ fn spawn_building(
         BuildingType::Decoy => {
             commands.spawn((
                 Name::new("Decoy"),
-                Destructable { health: 100.0 },
+                Destructable::new(100.0),
                 SceneBundle {
                     scene: object_handles[&ObjectKey::Decoy].clone_weak(),
                     transform: Transform::from_translation(event.position),
                     ..Default::default()
                 },
                 StateScoped(Screen::Playing),
+                BarSettings::<Destructable> {
+                    width: 5.0,
+                    offset: 3.0,
+                    height: BarHeight::Static(0.5),
+                    ..Default::default()
+                },
             ));
         }
     }

@@ -56,16 +56,16 @@ fn record_combat_controller(
 ) {
     // Record mouse world position.
     let (camera, camera_transform) = camera.single();
-    let window = window.single();
-
-    if let Some(ray) = window
-        .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
-    {
-        if let Some(distance) = ray.intersect_plane(Vec3::ZERO, InfinitePlane3d::new(Vec3::Z)) {
-            let world_position = ray.get_point(distance);
-            for mut controller in &mut controller_query {
-                controller.mouse_world_pos = world_position.truncate();
+    if let Ok(window) = window.get_single() {
+        if let Some(ray) = window
+            .cursor_position()
+            .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        {
+            if let Some(distance) = ray.intersect_plane(Vec3::ZERO, InfinitePlane3d::new(Vec3::Z)) {
+                let world_position = ray.get_point(distance);
+                for mut controller in &mut controller_query {
+                    controller.mouse_world_pos = world_position.truncate();
+                }
             }
         }
     }

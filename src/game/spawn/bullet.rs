@@ -4,15 +4,11 @@ use avian3d::{
 };
 use bevy::prelude::*;
 
-use crate::{
-    game::{collision::CollisionLayer, combat::ShootEvent},
-    AppSet,
-};
+use crate::game::{collision::CollisionLayer, combat::ShootEvent, util::DestroyAfterSecs};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_bullet);
     app.init_resource::<BulletAssets>();
-    app.add_systems(Update, destroy_after_secs.in_set(AppSet::TickTimers));
 }
 
 #[derive(Resource, Default)]
@@ -58,29 +54,4 @@ fn spawn_bullet(
         ),
         DestroyAfterSecs::new(5.0),
     ));
-}
-
-#[derive(Component)]
-struct DestroyAfterSecs {
-    timer: Timer,
-}
-impl DestroyAfterSecs {
-    fn new(duration: f32) -> Self {
-        Self {
-            timer: Timer::from_seconds(duration, TimerMode::Once),
-        }
-    }
-}
-
-fn destroy_after_secs(
-    mut commands: Commands,
-    time: Res<Time>,
-    mut query: Query<(Entity, &mut DestroyAfterSecs)>,
-) {
-    for (entity, mut destroy_after_secs) in query.iter_mut() {
-        destroy_after_secs.timer.tick(time.delta());
-        if destroy_after_secs.timer.finished() {
-            commands.entity(entity).despawn();
-        }
-    }
 }

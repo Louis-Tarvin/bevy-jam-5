@@ -6,6 +6,7 @@ use crate::{
     game::{
         assets::{HandleMap, ObjectKey},
         collision::CollisionLayer,
+        util::Spin,
     },
     screen::Screen,
 };
@@ -17,11 +18,6 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Event, Debug)]
 pub struct SpawnAsteroid {
     pub position: Vec3,
-}
-
-#[derive(Component, Debug)]
-pub struct Asteroid {
-    pub rotation_axis: Vec3,
 }
 
 fn spawn_asteroid(
@@ -46,13 +42,14 @@ fn spawn_asteroid(
             transform,
             ..Default::default()
         },
-        Asteroid {
+        Spin {
             rotation_axis: Vec3::new(
                 rng.gen_range(-1.0..1.0),
                 rng.gen_range(-1.0..1.0),
                 rng.gen_range(-1.0..1.0),
             )
             .normalize(),
+            rotation_speed: 0.1,
         },
         Collider::sphere(5.0),
         CollisionLayers::new([CollisionLayer::Asteroid], LayerMask::NONE),

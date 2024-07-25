@@ -17,6 +17,7 @@ log = { version = "0.4", features = [
 ] }
 rand = "0.8"
 avian3d = "0.1"
+bevy_health_bar3d = "3.3.0"
 
 [features]
 default = [
