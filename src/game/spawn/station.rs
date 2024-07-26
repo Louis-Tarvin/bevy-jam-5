@@ -22,6 +22,9 @@ pub struct SpawnStation;
 #[reflect(Component)]
 pub struct Station;
 
+#[derive(Component)]
+pub struct StationCameraTarget;
+
 fn spawn_station(
     _trigger: Trigger<SpawnStation>,
     mut commands: Commands,
@@ -76,4 +79,11 @@ fn spawn_station(
                 ));
             }
         });
+
+    commands.spawn((
+        Name::new("CameraTarget"),
+        Transform::from_translation(Vec3::new(0.0, 0.0, 200.0)),
+        GlobalTransform::default(),
+        StationCameraTarget,
+    ));
 }

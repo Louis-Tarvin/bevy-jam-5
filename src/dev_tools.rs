@@ -30,8 +30,7 @@ fn toggle_state(
         match current_state.get() {
             GamePhase::Gather => next_state.set(GamePhase::Combat),
             GamePhase::Combat => next_state.set(GamePhase::Build),
-            GamePhase::Build => next_state.set(GamePhase::Research),
-            GamePhase::Research => next_state.set(GamePhase::Gather),
+            GamePhase::Build => next_state.set(GamePhase::Gather),
         }
     }
 }

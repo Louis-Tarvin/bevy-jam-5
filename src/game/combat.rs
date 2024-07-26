@@ -5,15 +5,23 @@ use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::AppSet;
 
-use super::spawn::player::PlayerTurret;
+use super::{phase::GamePhase, spawn::player::CombatShipTurret};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CombatController>();
     app.add_systems(Update, tick_attack_timer.in_set(AppSet::TickTimers));
-    app.add_systems(Update, record_combat_controller.in_set(AppSet::RecordInput));
     app.add_systems(
         Update,
-        (rotate_towards_mouse, shoot).chain().in_set(AppSet::Update),
+        record_combat_controller
+            .run_if(in_state(GamePhase::Combat))
+            .in_set(AppSet::RecordInput),
+    );
+    app.add_systems(
+        Update,
+        (rotate_towards_mouse, shoot)
+            .chain()
+            .run_if(in_state(GamePhase::Combat))
+            .in_set(AppSet::Update),
     );
     app.add_systems(
         Update,
@@ -78,7 +86,7 @@ fn record_combat_controller(
 
 fn rotate_towards_mouse(
     ship_query: Query<(&GlobalTransform, &CombatController)>,
-    mut turret_query: Query<&mut Transform, With<PlayerTurret>>,
+    mut turret_query: Query<&mut Transform, With<CombatShipTurret>>,
     time: Res<Time>,
 ) {
     for (global_transform, controller) in ship_query.iter() {
@@ -109,7 +117,7 @@ pub struct ShootEvent {
 
 fn shoot(
     mut ship_query: Query<&mut CombatController>,
-    turret_query: Query<(&GlobalTransform, &Transform), With<PlayerTurret>>,
+    turret_query: Query<(&GlobalTransform, &Transform), With<CombatShipTurret>>,
     mut commands: Commands,
 ) {
     for mut controller in ship_query.iter_mut() {

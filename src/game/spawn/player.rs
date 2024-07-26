@@ -13,36 +13,37 @@ use crate::{
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_player);
-    app.register_type::<Player>();
+    app.observe(spawn_combat_ship);
+    app.observe(spawn_mining_ship);
 }
 
 #[derive(Event, Debug)]
-pub struct SpawnPlayer;
-
-#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
-#[reflect(Component)]
-pub struct Player;
+pub struct SpawnCombatShip;
 
 #[derive(Component)]
-pub struct PlayerTurret;
+pub struct CombatShip;
 
-fn spawn_player(
-    _trigger: Trigger<SpawnPlayer>,
+#[derive(Component)]
+pub struct CombatShipTurret;
+
+#[derive(Component)]
+pub struct CombatShipCameraTarget;
+
+fn spawn_combat_ship(
+    _trigger: Trigger<SpawnCombatShip>,
     mut commands: Commands,
     object_handles: Res<HandleMap<ObjectKey>>,
 ) {
     commands
         .spawn((
-            Name::new("Player"),
-            Player,
+            Name::new("CombatShip"),
             SceneBundle {
                 scene: object_handles[&ObjectKey::ShipBody].clone_weak(),
                 ..Default::default()
             },
+            CombatShip,
             MovementController::new(50.0, 0.5, 100.0),
             CombatController::new(1.0, 5.0),
-            InteractionController::new(1.0),
             Velocity::default(),
             StateScoped(Screen::Playing),
         ))
@@ -53,7 +54,52 @@ fn spawn_player(
                     scene: object_handles[&ObjectKey::ShipTurret].clone_weak(),
                     ..Default::default()
                 },
-                PlayerTurret,
+                CombatShipTurret,
+            ));
+
+            parent.spawn((
+                Name::new("CameraTarget"),
+                Transform::from_translation(Vec3::new(0.0, 0.0, 100.0)),
+                GlobalTransform::default(),
+                CombatShipCameraTarget,
+            ));
+        });
+}
+
+#[derive(Event, Debug)]
+pub struct SpawnMiningShip;
+
+#[derive(Component)]
+pub struct MiningShip;
+
+#[derive(Component)]
+pub struct MiningShipCameraTarget;
+
+fn spawn_mining_ship(
+    _trigger: Trigger<SpawnMiningShip>,
+    mut commands: Commands,
+    object_handles: Res<HandleMap<ObjectKey>>,
+) {
+    commands
+        .spawn((
+            Name::new("MiningShip"),
+            SceneBundle {
+                scene: object_handles[&ObjectKey::ShipBody].clone_weak(),
+                transform: Transform::from_xyz(-10.0, -10.0, 0.0),
+                ..Default::default()
+            },
+            MiningShip,
+            MovementController::new(40.0, 0.6, 800.0),
+            InteractionController::new(1.0),
+            Velocity::default(),
+            StateScoped(Screen::Playing),
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                Name::new("CameraTarget"),
+                Transform::from_translation(Vec3::new(0.0, 0.0, 150.0)),
+                GlobalTransform::default(),
+                MiningShipCameraTarget,
             ));
         });
 }

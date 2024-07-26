@@ -29,6 +29,7 @@ pub struct MovementController {
     friction: f32,
     velocity_limit: f32,
     thrust: Vec2,
+    pub enabled: bool,
 }
 impl MovementController {
     pub fn new(thrust_multiplier: f32, friction: f32, velocity_limit: f32) -> Self {
@@ -78,6 +79,10 @@ fn update_velocity(mut query: Query<(&MovementController, &mut Velocity)>, time:
     for (controller, mut velocity) in query.iter_mut() {
         // Apply friction.
         velocity.0 *= 1.0 - controller.friction * time.delta_seconds();
+
+        if !controller.enabled {
+            continue;
+        }
 
         // Apply thrust.
         velocity.0 += controller.thrust * controller.thrust_multiplier * time.delta_seconds();

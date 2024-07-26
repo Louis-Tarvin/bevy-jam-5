@@ -13,7 +13,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, destroy_building.in_set(AppSet::PostUpdate));
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Reflect)]
 pub enum BuildingType {
     Decoy,
 }
@@ -56,7 +56,7 @@ fn spawn_building(
         BuildingType::Decoy => {
             commands.spawn((
                 Name::new("Decoy"),
-                Destructable::new(100.0),
+                Destructable::new(200.0),
                 SceneBundle {
                     scene: object_handles[&ObjectKey::Decoy].clone_weak(),
                     transform: Transform::from_translation(event.position),

@@ -2,7 +2,11 @@
 
 use bevy::prelude::*;
 
-use super::{asteroid::SpawnAsteroid, player::SpawnPlayer, station::SpawnStation};
+use super::{
+    asteroid::SpawnAsteroid,
+    player::{SpawnCombatShip, SpawnMiningShip},
+    station::SpawnStation,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_level);
@@ -14,7 +18,8 @@ pub struct SpawnLevel;
 fn spawn_level(_trigger: Trigger<SpawnLevel>, mut commands: Commands) {
     commands.trigger(SpawnStation);
 
-    commands.trigger(SpawnPlayer);
+    commands.trigger(SpawnCombatShip);
+    commands.trigger(SpawnMiningShip);
 
     commands.trigger(SpawnAsteroid {
         position: Vec3::new(10.0, 10.0, -5.0),

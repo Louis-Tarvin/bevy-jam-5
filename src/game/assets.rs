@@ -20,7 +20,8 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum ImageKey {
-    Ducky,
+    SpinnerCore,
+    SpinnerFrame,
 }
 
 impl AssetKey for ImageKey {
@@ -30,15 +31,26 @@ impl AssetKey for ImageKey {
 impl FromWorld for HandleMap<ImageKey> {
     fn from_world(world: &mut World) -> Self {
         let asset_server = world.resource::<AssetServer>();
-        [(
-            ImageKey::Ducky,
-            asset_server.load_with_settings(
-                "images/ducky.png",
-                |settings: &mut ImageLoaderSettings| {
-                    settings.sampler = ImageSampler::nearest();
-                },
+        [
+            (
+                ImageKey::SpinnerCore,
+                asset_server.load_with_settings(
+                    "images/spinner_core.png",
+                    |settings: &mut ImageLoaderSettings| {
+                        settings.sampler = ImageSampler::default();
+                    },
+                ),
             ),
-        )]
+            (
+                ImageKey::SpinnerFrame,
+                asset_server.load_with_settings(
+                    "images/spinner_frame.png",
+                    |settings: &mut ImageLoaderSettings| {
+                        settings.sampler = ImageSampler::default();
+                    },
+                ),
+            ),
+        ]
         .into()
     }
 }

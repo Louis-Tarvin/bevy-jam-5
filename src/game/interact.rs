@@ -53,8 +53,9 @@ fn record_interaction_controller(
     mut controller_query: Query<&mut InteractionController>,
 ) {
     for mut controller in controller_query.iter_mut() {
-        controller.interacting = input.pressed(KeyCode::KeyE);
-        controller.just_interacted = input.just_pressed(KeyCode::KeyE);
+        controller.interacting = input.pressed(KeyCode::KeyE) || input.pressed(KeyCode::Space);
+        controller.just_interacted =
+            input.just_pressed(KeyCode::KeyE) || input.just_pressed(KeyCode::Space);
     }
 }
 

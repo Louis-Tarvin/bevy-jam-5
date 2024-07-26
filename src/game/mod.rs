@@ -8,6 +8,8 @@ use self::spawn::building::Destructable;
 
 pub mod assets;
 pub mod audio;
+pub mod build;
+pub mod camera;
 pub mod collision;
 mod combat;
 pub mod gameplay;
@@ -15,6 +17,7 @@ mod interact;
 mod movement;
 pub mod phase;
 pub mod spawn;
+pub mod ui;
 pub mod util;
 
 pub(super) fn plugin(app: &mut App) {
@@ -31,5 +34,8 @@ pub(super) fn plugin(app: &mut App) {
         combat::plugin,
         collision::plugin,
         util::plugin,
+        camera::plugin,
+        ui::plugin,
+        build::plugin,
     ));
 }
