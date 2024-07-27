@@ -4,7 +4,10 @@ use avian3d::PhysicsPlugins;
 use bevy::prelude::*;
 use bevy_health_bar3d::plugin::HealthBarPlugin;
 
-use self::{interact::InteractionProgressBar, spawn::building::Destructable};
+use self::{
+    mining::InteractionProgressBar,
+    spawn::{asteroid::Asteroid, building::Destructable},
+};
 
 pub mod assets;
 pub mod audio;
@@ -13,7 +16,7 @@ pub mod camera;
 pub mod collision;
 mod combat;
 pub mod gameplay;
-mod interact;
+mod mining;
 mod movement;
 pub mod phase;
 pub mod spawn;
@@ -26,13 +29,14 @@ pub(super) fn plugin(app: &mut App) {
         PhysicsPlugins::default(),
         HealthBarPlugin::<Destructable>::default(),
         HealthBarPlugin::<InteractionProgressBar>::default(),
+        HealthBarPlugin::<Asteroid>::default(),
     ));
     app.add_plugins((
         audio::plugin,
         assets::plugin,
         movement::plugin,
         phase::plugin,
-        interact::plugin,
+        mining::plugin,
         spawn::plugin,
         gameplay::plugin,
         combat::plugin,

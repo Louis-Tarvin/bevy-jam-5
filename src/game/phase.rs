@@ -10,7 +10,7 @@ use super::{
         player::{CombatShip, CombatShipCameraTarget, MiningShipCameraTarget},
         station::StationCameraTarget,
     },
-    ui::BuildDockUi,
+    ui::{BuildDockUi, GatherDockUi},
 };
 
 pub const PHASE_DURATION: f32 = 24.0;
@@ -18,6 +18,7 @@ pub const PHASE_DURATION: f32 = 24.0;
 pub(super) fn plugin(app: &mut App) {
     app.add_sub_state::<GamePhase>();
     app.add_systems(OnEnter(GamePhase::Gather), on_gather);
+    app.add_systems(OnExit(GamePhase::Gather), exit_gather);
     app.add_systems(OnEnter(GamePhase::Combat), on_combat);
     app.add_systems(OnEnter(GamePhase::Build), on_build);
     app.add_systems(OnExit(GamePhase::Build), exit_build);
@@ -42,6 +43,7 @@ fn on_gather(
     mut camera_target: ResMut<CameraTarget>,
     camera_target_query: Query<Entity, With<MiningShipCameraTarget>>,
     mut controller_query: Query<(&mut MovementController, Option<&CombatShip>)>,
+    mut ui_query: Query<&mut Visibility, With<GatherDockUi>>,
 ) {
     if let Some(target) = camera_target_query.iter().next() {
         camera_target.0 = Some(target);
@@ -49,6 +51,16 @@ fn on_gather(
 
     for (mut controller, ship) in &mut controller_query.iter_mut() {
         controller.enabled = ship.is_none();
+    }
+
+    for mut visibility in &mut ui_query.iter_mut() {
+        *visibility = Visibility::Visible;
+    }
+}
+
+fn exit_gather(mut ui_query: Query<&mut Visibility, With<GatherDockUi>>) {
+    for mut visibility in &mut ui_query.iter_mut() {
+        *visibility = Visibility::Hidden;
     }
 }
 

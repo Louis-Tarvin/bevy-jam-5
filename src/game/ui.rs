@@ -2,6 +2,8 @@ use bevy::prelude::*;
 
 use crate::{screen::Screen, ui::prelude::*};
 
+use self::ui_palette::NODE_BACKGROUND;
+
 use super::{
     assets::{HandleMap, ImageKey},
     build::BuildAction,
@@ -13,8 +15,10 @@ use super::{
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
-        (update_resource_count, update_spinner).run_if(in_state(Screen::Playing)),
+        (update_resource_count, update_resource_gathered_count)
+            .run_if(in_state(Screen::Playing).and_then(resource_changed::<Resources>)),
     );
+    app.add_systems(Update, update_spinner.run_if(in_state(Screen::Playing)));
 }
 
 #[derive(Component)]
@@ -25,6 +29,12 @@ pub struct SpinnerCoreUi;
 
 #[derive(Component)]
 pub struct BuildDockUi;
+
+#[derive(Component)]
+pub struct GatherDockUi;
+
+#[derive(Component)]
+pub struct GatherResourceCountUi;
 
 pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) {
     let style = TextStyle {
@@ -41,7 +51,7 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
                 ResourceCountUi,
                 TextBundle::from_sections([
                     TextSection::new("Resources: ", style.clone()),
-                    TextSection::from_style(style),
+                    TextSection::from_style(style.clone()),
                 ])
                 .with_style(Style {
                     position_type: PositionType::Absolute,
@@ -94,6 +104,41 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
                     BuildAction(BuildingType::Turret),
                 );
             });
+
+            parent
+                .dock()
+                .insert(GatherDockUi)
+                .insert(Visibility::Hidden)
+                .with_children(|parent| {
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                width: Val::Px(150.0),
+                                height: Val::Px(60.0),
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..Default::default()
+                            },
+                            background_color: BackgroundColor(NODE_BACKGROUND),
+                            ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            parent.spawn((
+                                Name::new("GatherResourceCount"),
+                                GatherResourceCountUi,
+                                TextBundle::from_sections([
+                                    TextSection::new("Resources: ", style.clone()),
+                                    TextSection::from_style(style),
+                                ])
+                                .with_style(Style {
+                                    position_type: PositionType::Absolute,
+                                    bottom: Val::Px(10.0),
+                                    left: Val::Px(10.0),
+                                    ..Default::default()
+                                }),
+                            ));
+                        });
+                });
         });
 }
 
@@ -102,7 +147,16 @@ fn update_resource_count(
     resources: Res<Resources>,
 ) {
     for (_, mut text) in query.iter_mut() {
-        text.sections[1].value = resources.0.to_string();
+        text.sections[1].value = resources.delivered.to_string();
+    }
+}
+
+fn update_resource_gathered_count(
+    mut text_query: Query<&mut Text, With<GatherResourceCountUi>>,
+    resources: Res<Resources>,
+) {
+    for mut text in text_query.iter_mut() {
+        text.sections[1].value = resources.gathered.to_string();
     }
 }
 

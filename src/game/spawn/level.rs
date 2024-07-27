@@ -22,13 +22,13 @@ fn spawn_level(_trigger: Trigger<SpawnLevel>, mut commands: Commands) {
     commands.trigger(SpawnMiningShip);
 
     commands.trigger(SpawnAsteroid {
-        position: Vec3::new(10.0, 10.0, -5.0),
+        position: Vec3::new(20.0, 30.0, -5.0),
     });
     commands.trigger(SpawnAsteroid {
-        position: Vec3::new(-10.0, -10.0, -5.0),
+        position: Vec3::new(-30.0, -15.0, -5.0),
     });
     commands.trigger(SpawnAsteroid {
-        position: Vec3::new(10.0, -10.0, -5.0),
+        position: Vec3::new(60.0, -50.0, -5.0),
     });
 
     commands.spawn((

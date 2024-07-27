@@ -3,6 +3,7 @@ use avian3d::{
     dynamics::rigid_body::RigidBody,
 };
 use bevy::prelude::*;
+use rand::Rng;
 
 use crate::{
     game::{
@@ -60,12 +61,23 @@ fn spawn_enemy(
     mut commands: Commands,
     object_handles: Res<HandleMap<ObjectKey>>,
 ) {
+    let mut rng = rand::thread_rng();
+    let mut random_rotation = Quat::IDENTITY;
+    random_rotation *= Quat::from_rotation_x(f32::to_radians(rng.gen_range(0.0..360.0)));
+    random_rotation *= Quat::from_rotation_y(f32::to_radians(rng.gen_range(0.0..360.0)));
+    random_rotation *= Quat::from_rotation_z(f32::to_radians(rng.gen_range(0.0..360.0)));
+
+    let transform = Transform {
+        translation: trigger.event().position,
+        rotation: random_rotation,
+        ..Default::default()
+    };
     commands.spawn((
         Name::new("Enemy"),
         Enemy::new(),
         SceneBundle {
             scene: object_handles[&ObjectKey::Enemy].clone_weak(),
-            transform: Transform::from_translation(trigger.event().position),
+            transform,
             ..Default::default()
         },
         Collider::sphere(1.0),
@@ -79,7 +91,7 @@ fn spawn_enemy(
     ));
 }
 
-const WANDER_PROBABILITY: f32 = 0.7;
+const WANDER_PROBABILITY: f32 = 0.6;
 
 fn choose_target(
     mut enemy_query: Query<(&Transform, &mut Enemy), Without<Destructable>>,

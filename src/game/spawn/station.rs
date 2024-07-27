@@ -32,9 +32,10 @@ fn spawn_station(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let mut transform = Transform::from_xyz(0.0, 0.0, -10.0);
+    let mut transform = Transform::from_xyz(0.0, 0.0, -30.0);
     transform.rotate_z(f32::to_radians(90.0));
     transform.rotate_y(f32::to_radians(20.0));
+    transform.scale = Vec3::splat(2.8);
     commands
         .spawn((
             Name::new("Station"),

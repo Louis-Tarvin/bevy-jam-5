@@ -4,10 +4,15 @@ use bevy_health_bar3d::configuration::{ColorScheme, ForegroundColor, Percentage}
 
 use crate::AppSet;
 
-use super::{collision::CollisionLayer, gameplay::Resources, phase::GamePhase};
+use super::{
+    collision::CollisionLayer,
+    gameplay::Resources,
+    phase::GamePhase,
+    spawn::asteroid::{Asteroid, SpawnRandomAsteroid},
+};
 
 pub(super) fn plugin(app: &mut App) {
-    app.register_type::<InteractionController>();
+    app.register_type::<MiningController>();
     app.insert_resource(
         ColorScheme::<InteractionProgressBar>::new().foreground_color(ForegroundColor::Static(
             bevy::color::palettes::tailwind::ORANGE_600.into(),
@@ -19,7 +24,11 @@ pub(super) fn plugin(app: &mut App) {
     );
     app.add_systems(
         Update,
-        (mine, set_progress)
+        (
+            (mine, destroy_empty_asteroids).chain(),
+            set_progress,
+            deliver_resources,
+        )
             .run_if(in_state(GamePhase::Gather))
             .in_set(AppSet::Update),
     );
@@ -27,14 +36,14 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
-pub struct InteractionController {
+pub struct MiningController {
     pub interacting: bool,
     pub just_interacted: bool,
     mining_time: f32,
     mining_speed_multiplier: f32,
     timer: Timer,
 }
-impl InteractionController {
+impl MiningController {
     pub fn new(mining_time: f32) -> Self {
         Self {
             interacting: false,
@@ -48,7 +57,7 @@ impl InteractionController {
 
 fn record_interaction_controller(
     input: Res<ButtonInput<KeyCode>>,
-    mut controller_query: Query<&mut InteractionController>,
+    mut controller_query: Query<&mut MiningController>,
 ) {
     for mut controller in controller_query.iter_mut() {
         controller.interacting = input.pressed(KeyCode::KeyE) || input.pressed(KeyCode::Space);
@@ -70,7 +79,7 @@ impl Percentage for InteractionProgressBar {
     }
 }
 
-fn set_progress(mut progress_query: Query<(&InteractionController, &mut InteractionProgressBar)>) {
+fn set_progress(mut progress_query: Query<(&MiningController, &mut InteractionProgressBar)>) {
     for (controller, mut progress) in progress_query.iter_mut() {
         if controller.interacting {
             progress.0 = controller.timer.elapsed_secs() / controller.mining_time;
@@ -81,14 +90,15 @@ fn set_progress(mut progress_query: Query<(&InteractionController, &mut Interact
 }
 
 fn mine(
-    mut query: Query<(&Transform, &mut InteractionController)>,
+    mut query: Query<(&Transform, &mut MiningController)>,
+    mut asteroid_query: Query<&mut Asteroid>,
     time: Res<Time>,
     mut resources: ResMut<Resources>,
     spatial_query: SpatialQuery,
 ) {
     for (transform, mut controller) in query.iter_mut() {
         if controller.interacting {
-            if let Some(_hit) = spatial_query.cast_ray(
+            if let Some(hit) = spatial_query.cast_ray(
                 transform.translation,
                 Dir3::NEG_Z,
                 100.0,
@@ -100,10 +110,34 @@ fn mine(
                     .timer
                     .tick(time.delta().mul_f32(speed_multiplier));
                 if controller.timer.finished() {
-                    resources.0 += 1;
-                    info!("Mined 1 resource. Total: {}", resources.0);
+                    resources.gathered += 1;
+                    if let Ok(mut asteroid) = asteroid_query.get_mut(hit.entity) {
+                        asteroid.contained_resources -= 1;
+                    }
                 }
             }
+        }
+    }
+}
+
+fn deliver_resources(
+    mut resources: ResMut<Resources>,
+    mut query: Query<&Transform, With<MiningController>>,
+) {
+    // If within 15m of the station (origin), deliver resources
+    for transform in query.iter_mut() {
+        if transform.translation.xy().length() < 15.0 {
+            resources.delivered += resources.gathered;
+            resources.gathered = 0;
+        }
+    }
+}
+
+fn destroy_empty_asteroids(mut commands: Commands, query: Query<(Entity, &Asteroid)>) {
+    for (entity, asteroid) in query.iter() {
+        if asteroid.contained_resources == 0 {
+            commands.entity(entity).despawn_recursive();
+            commands.trigger(SpawnRandomAsteroid);
         }
     }
 }

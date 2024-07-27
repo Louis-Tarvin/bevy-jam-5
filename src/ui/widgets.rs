@@ -139,7 +139,7 @@ impl<T: Spawn> Widgets for T {
                     padding: UiRect::all(Px(10.0)),
                     ..default()
                 },
-                background_color: BackgroundColor(DOCK_BACKGROUND),
+                background_color: BackgroundColor(NODE_BORDER),
                 ..default()
             },
         ))

@@ -7,7 +7,7 @@ use crate::{
     game::{
         assets::{HandleMap, ObjectKey},
         combat::CombatController,
-        interact::{InteractionController, InteractionProgressBar},
+        mining::{InteractionProgressBar, MiningController},
         movement::{MovementController, Velocity},
     },
     screen::Screen,
@@ -92,7 +92,7 @@ fn spawn_mining_ship(
             },
             MiningShip,
             MovementController::new(40.0, 0.6, 800.0),
-            InteractionController::new(1.0),
+            MiningController::new(1.0),
             Velocity::default(),
             StateScoped(Screen::Playing),
             InteractionProgressBar::default(),
