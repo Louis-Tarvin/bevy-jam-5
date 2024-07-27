@@ -23,6 +23,7 @@ pub mod spawn;
 pub mod turret;
 pub mod ui;
 pub mod util;
+pub mod waypoint;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -46,5 +47,6 @@ pub(super) fn plugin(app: &mut App) {
         ui::plugin,
         build::plugin,
         turret::plugin,
+        waypoint::plugin,
     ));
 }

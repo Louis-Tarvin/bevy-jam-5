@@ -11,6 +11,7 @@ use crate::{
         collision::CollisionLayer,
         gameplay::GameplayManager,
         util::Spin,
+        waypoint::Waypointed,
     },
     screen::Screen,
 };
@@ -84,6 +85,7 @@ fn spawn_asteroid(
             height: BarHeight::Static(0.5),
             ..Default::default()
         },
+        Waypointed::new(Color::srgb(0.7, 0.4, 0.5)),
         StateScoped(Screen::Playing),
     ));
 }

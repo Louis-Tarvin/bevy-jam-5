@@ -22,6 +22,7 @@ pub(super) fn plugin(app: &mut App) {
 pub enum ImageKey {
     SpinnerCore,
     SpinnerFrame,
+    Waypoint,
 }
 
 impl AssetKey for ImageKey {
@@ -45,6 +46,15 @@ impl FromWorld for HandleMap<ImageKey> {
                 ImageKey::SpinnerFrame,
                 asset_server.load_with_settings(
                     "images/spinner_frame.png",
+                    |settings: &mut ImageLoaderSettings| {
+                        settings.sampler = ImageSampler::default();
+                    },
+                ),
+            ),
+            (
+                ImageKey::Waypoint,
+                asset_server.load_with_settings(
+                    "images/waypoint.png",
                     |settings: &mut ImageLoaderSettings| {
                         settings.sampler = ImageSampler::default();
                     },

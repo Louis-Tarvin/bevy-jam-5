@@ -5,6 +5,7 @@ use crate::{
     game::{
         assets::{HandleMap, ObjectKey},
         util::Spin,
+        waypoint::Waypointed,
     },
     screen::Screen,
 };
@@ -57,6 +58,7 @@ fn spawn_station(
                 height: BarHeight::Static(1.0),
                 ..Default::default()
             },
+            Waypointed::new(Color::WHITE),
         ))
         .with_children(|parent| {
             // spawn random lights along the radius

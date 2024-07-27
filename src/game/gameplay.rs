@@ -10,7 +10,7 @@ pub(super) fn plugin(app: &mut App) {
         delivered: 5,
     });
     app.insert_resource(GameplayManager {
-        enemy_spawn_timer: Timer::from_seconds(2.0, TimerMode::Repeating),
+        enemy_spawn_timer: Timer::from_seconds(4.0, TimerMode::Repeating),
         elapsed_time: 0.0,
         current_phase_time: 0.0,
         asteroid_spawn_distance: 100.0,
