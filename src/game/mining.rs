@@ -9,6 +9,7 @@ use super::{
     audio::sfx::PlaySfx,
     collision::CollisionLayer,
     gameplay::Resources,
+    notifications::Notification,
     phase::GamePhase,
     spawn::asteroid::{Asteroid, SpawnRandomAsteroid},
 };
@@ -125,22 +126,39 @@ fn deliver_resources(
     mut resources: ResMut<Resources>,
     mut query: Query<&Transform, With<MiningController>>,
     mut commands: Commands,
+    mut notification_writer: EventWriter<Notification>,
 ) {
     // If within 15m of the station (origin), deliver resources
     for transform in query.iter_mut() {
         if transform.translation.xy().length() < 15.0 && resources.gathered > 0 {
             resources.delivered += resources.gathered;
+            notification_writer.send(Notification(format!(
+                "Delivered {} resources to the base.",
+                resources.gathered
+            )));
             resources.gathered = 0;
             commands.trigger(PlaySfx::Key(SfxKey::Collect));
         }
     }
 }
 
-fn destroy_empty_asteroids(mut commands: Commands, query: Query<(Entity, &Asteroid)>) {
-    for (entity, asteroid) in query.iter() {
+fn destroy_empty_asteroids(
+    mut commands: Commands,
+    query: Query<(Entity, &Asteroid, &Visibility)>,
+    mut notification_writer: EventWriter<Notification>,
+) {
+    let mut are_visible_astroids = false;
+    let mut despawned = false;
+    for (entity, asteroid, visibility) in query.iter() {
         if asteroid.contained_resources == 0 {
             commands.entity(entity).despawn_recursive();
             commands.trigger(SpawnRandomAsteroid);
+            despawned = true;
+        } else if matches!(visibility, Visibility::Visible) {
+            are_visible_astroids = true;
         }
+    }
+    if !are_visible_astroids && despawned {
+        notification_writer.send(Notification("All asteroids have been mined. In the build phase, use right-click to scan for more asteroids.".to_string()));
     }
 }

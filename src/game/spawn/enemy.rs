@@ -30,6 +30,7 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Event, Debug)]
 pub struct SpawnEnemy {
     pub position: Vec3,
+    pub damage_mult: f32,
 }
 
 #[derive(Default, Debug, Reflect)]
@@ -46,11 +47,13 @@ pub enum EnemyState {
 pub struct Enemy {
     pub health: f32,
     pub state: EnemyState,
+    pub damage: f32,
 }
 impl Enemy {
-    pub fn new() -> Self {
+    pub fn new(damage: f32) -> Self {
         Self {
             health: 100.0,
+            damage,
             state: EnemyState::None,
         }
     }
@@ -67,14 +70,17 @@ fn spawn_enemy(
     random_rotation *= Quat::from_rotation_y(f32::to_radians(rng.gen_range(0.0..360.0)));
     random_rotation *= Quat::from_rotation_z(f32::to_radians(rng.gen_range(0.0..360.0)));
 
+    let event = trigger.event();
+
     let transform = Transform {
-        translation: trigger.event().position,
+        translation: event.position,
         rotation: random_rotation,
+        scale: Vec3::splat(event.damage_mult),
         ..Default::default()
     };
     commands.spawn((
         Name::new("Enemy"),
-        Enemy::new(),
+        Enemy::new(8.0 * event.damage_mult),
         SceneBundle {
             scene: object_handles[&ObjectKey::Enemy].clone_weak(),
             transform,
@@ -177,8 +183,7 @@ fn attack_target(
     for mut enemy in enemy_query.iter_mut() {
         if let EnemyState::Attacking(target) = enemy.state {
             if let Ok(mut target) = building_query.get_mut(target) {
-                let damage = 10.0;
-                target.health -= damage * time.delta_seconds();
+                target.health -= enemy.damage * time.delta_seconds();
             } else {
                 enemy.state = EnemyState::None;
             }

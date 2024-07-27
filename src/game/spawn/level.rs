@@ -31,6 +31,7 @@ fn spawn_level(_trigger: Trigger<SpawnLevel>, mut commands: Commands) {
     });
     commands.trigger(SpawnRandomAsteroid);
     commands.trigger(SpawnRandomAsteroid);
+    commands.trigger(SpawnRandomAsteroid);
 
     commands.spawn((
         Name::new("Directional light"),

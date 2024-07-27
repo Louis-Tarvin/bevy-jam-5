@@ -81,10 +81,10 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
                     },
                 ))
                 .with_children(|parent| {
-                    parent.tooltip_label("Left click - pan");
+                    parent.tooltip_label("Left click - pan camera");
                     parent.tooltip_label("Space/E - reset camera");
-                    parent.tooltip_label("Right click - scan for asteroids at cursor");
                     parent.tooltip_label("Z - toggle zoom");
+                    parent.tooltip_label("Right click - scan for asteroids at cursor");
                 });
 
             parent
@@ -106,7 +106,7 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
                 ))
                 .with_children(|parent| {
                     parent.tooltip_label("WASD/Arrow keys - ship thrust");
-                    parent.tooltip_label("Space/E (hold) - mine asteroid below ship");
+                    parent.tooltip_label("Space/E (hold) - mine asteroid below the ship");
                     parent.tooltip_label(
                         "Held resources must be delivered to the base before they can be used",
                     );

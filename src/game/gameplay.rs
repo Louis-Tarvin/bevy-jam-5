@@ -47,6 +47,7 @@ pub struct GameplayManager {
     enemy_spawn_timer: Timer,
     peace_timer: Timer,
     pub enemy_spawn_rate_multiplier: f32,
+    pub enemy_damage_multiplier: f32,
     pub elapsed_time: f32,
     pub current_phase_time: f32,
     pub asteroid_spawn_distance: f32,
@@ -57,6 +58,7 @@ impl Default for GameplayManager {
             enemy_spawn_timer: Timer::from_seconds(6.0, TimerMode::Repeating),
             peace_timer: Timer::from_seconds(30.0, TimerMode::Once),
             enemy_spawn_rate_multiplier: 1.0,
+            enemy_damage_multiplier: 1.0,
             elapsed_time: 0.0,
             current_phase_time: 0.0,
             asteroid_spawn_distance: 100.0,
@@ -89,6 +91,9 @@ fn spawn_enemies(mut commands: Commands, manager: Res<GameplayManager>) {
             random_angle.sin() * ENEMY_SPAWN_DISTANCE,
             -3.0,
         );
-        commands.trigger(SpawnEnemy { position });
+        commands.trigger(SpawnEnemy {
+            position,
+            damage_mult: manager.enemy_damage_multiplier,
+        });
     }
 }

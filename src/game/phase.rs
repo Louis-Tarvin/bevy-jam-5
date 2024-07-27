@@ -120,13 +120,18 @@ fn update_phase(
     mut next_state: ResMut<NextState<GamePhase>>,
     mut manager: ResMut<GameplayManager>,
 ) {
-    if manager.current_phase_time >= PHASE_DURATION {
+    if manager.current_phase_time > PHASE_DURATION {
+        info!(
+            "update_phase called with current_phase_time: {}",
+            manager.current_phase_time
+        );
         match current_state.get() {
             GamePhase::Gather => next_state.set(GamePhase::Combat),
             GamePhase::Build => next_state.set(GamePhase::Gather),
             GamePhase::Combat => {
                 // A full cycle has passed. Increase the difficulty
-                manager.enemy_spawn_rate_multiplier += 0.1;
+                manager.enemy_spawn_rate_multiplier += 0.4;
+                manager.enemy_damage_multiplier += 0.1;
                 next_state.set(GamePhase::Build)
             }
         }

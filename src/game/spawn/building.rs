@@ -108,8 +108,8 @@ fn spawn_building(
             commands
                 .spawn((
                     Name::new("Turret"),
-                    Turret::new(1.0),
-                    Destructable::new(150.0),
+                    Turret::new(1.2),
+                    Destructable::new(50.0),
                     SceneBundle {
                         scene: object_handles[&ObjectKey::Decoy].clone_weak(),
                         transform: Transform::from_translation(event.position)
@@ -123,7 +123,7 @@ fn spawn_building(
                         height: BarHeight::Static(0.5),
                         ..Default::default()
                     },
-                    Collider::sphere(13.0),
+                    Collider::sphere(8.0),
                     RigidBody::Static,
                     Sensor,
                     CollisionLayers::new(

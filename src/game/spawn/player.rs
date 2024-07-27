@@ -91,7 +91,7 @@ fn spawn_mining_ship(
                 ..Default::default()
             },
             MiningShip,
-            MovementController::new(40.0, 0.6, 800.0),
+            MovementController::new(40.0, 0.8, 800.0),
             MiningController::new(1.0),
             Velocity::default(),
             StateScoped(Screen::Playing),

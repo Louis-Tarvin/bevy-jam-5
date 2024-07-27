@@ -66,8 +66,8 @@ fn spawn_asteroid(
     let mut entity = commands.spawn((
         Name::new("Asteroid"),
         Asteroid {
-            contained_resources: 10,
-            max_resources: 10,
+            contained_resources: 12,
+            max_resources: 12,
         },
         SceneBundle {
             scene: object_handles[&ObjectKey::Asteroid].clone_weak(),
@@ -84,7 +84,7 @@ fn spawn_asteroid(
             .normalize(),
             rotation_speed: 0.1,
         },
-        Collider::sphere(5.0),
+        Collider::sphere(7.0),
         CollisionLayers::new([CollisionLayer::Asteroid], LayerMask::NONE),
         BarSettings::<Asteroid> {
             width: 5.0,
