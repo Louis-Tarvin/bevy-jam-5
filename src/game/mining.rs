@@ -5,6 +5,8 @@ use bevy_health_bar3d::configuration::{ColorScheme, ForegroundColor, Percentage}
 use crate::AppSet;
 
 use super::{
+    assets::SfxKey,
+    audio::sfx::PlaySfx,
     collision::CollisionLayer,
     gameplay::Resources,
     phase::GamePhase,
@@ -24,14 +26,11 @@ pub(super) fn plugin(app: &mut App) {
     );
     app.add_systems(
         Update,
-        (
-            (mine, destroy_empty_asteroids).chain(),
-            set_progress,
-            deliver_resources,
-        )
+        ((mine, destroy_empty_asteroids).chain(), set_progress)
             .run_if(in_state(GamePhase::Gather))
             .in_set(AppSet::Update),
     );
+    app.add_systems(Update, deliver_resources.in_set(AppSet::Update));
 }
 
 #[derive(Component, Reflect, Default)]
@@ -95,6 +94,7 @@ fn mine(
     time: Res<Time>,
     mut resources: ResMut<Resources>,
     spatial_query: SpatialQuery,
+    mut commands: Commands,
 ) {
     for (transform, mut controller) in query.iter_mut() {
         if controller.interacting {
@@ -114,6 +114,7 @@ fn mine(
                     if let Ok(mut asteroid) = asteroid_query.get_mut(hit.entity) {
                         asteroid.contained_resources -= 1;
                     }
+                    commands.trigger(PlaySfx::Key(SfxKey::Collect));
                 }
             }
         }

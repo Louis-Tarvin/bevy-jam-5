@@ -114,6 +114,6 @@ fn update_phase(
             GamePhase::Combat => next_state.set(GamePhase::Build),
             GamePhase::Build => next_state.set(GamePhase::Gather),
         }
-        manager.current_phase_time = manager.elapsed_time % PHASE_DURATION;
+        manager.current_phase_time = (manager.elapsed_time + 0.01) % PHASE_DURATION;
     }
 }

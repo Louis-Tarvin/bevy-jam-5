@@ -6,6 +6,8 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use crate::AppSet;
 
 use super::{
+    assets::SfxKey,
+    audio::sfx::PlaySfx,
     phase::GamePhase,
     spawn::{bullet::Bullet, player::CombatShipTurret},
 };
@@ -138,6 +140,7 @@ fn shoot(
                     position,
                     direction,
                 });
+                commands.trigger(PlaySfx::Key(SfxKey::Shoot));
             }
         }
     }

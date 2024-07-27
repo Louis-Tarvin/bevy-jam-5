@@ -13,7 +13,6 @@ fn play_sfx(
 ) {
     let sfx_key = match trigger.event() {
         PlaySfx::Key(key) => *key,
-        PlaySfx::RandomStep => unimplemented!(),
     };
     commands.spawn(AudioSourceBundle {
         source: sfx_handles[&sfx_key].clone_weak(),
@@ -28,5 +27,4 @@ fn play_sfx(
 #[derive(Event)]
 pub enum PlaySfx {
     Key(SfxKey),
-    RandomStep,
 }

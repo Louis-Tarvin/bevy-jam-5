@@ -15,6 +15,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.insert_resource(ClearColor(Color::BLACK));
 
+    // TODO: don't exit on escape
     app.add_systems(
         Update,
         return_to_title_screen

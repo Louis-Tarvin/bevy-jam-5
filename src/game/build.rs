@@ -5,6 +5,8 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use crate::{screen::Screen, ui::interaction::InteractionQuery, AppSet};
 
 use super::{
+    assets::SfxKey,
+    audio::sfx::PlaySfx,
     phase::GamePhase,
     spawn::building::{BuildingType, SpawnBuilding},
 };
@@ -128,6 +130,7 @@ fn update_marker(
                     building_type,
                     position: marker.mouse_world_pos.extend(0.0),
                 });
+                commands.trigger(PlaySfx::Key(SfxKey::Build));
             }
         }
         *visibility = if marker.mode.is_some() {

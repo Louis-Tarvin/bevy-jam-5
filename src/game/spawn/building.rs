@@ -7,7 +7,8 @@ use bevy_health_bar3d::configuration::{BarHeight, BarSettings, Percentage};
 
 use crate::{
     game::{
-        assets::{HandleMap, ObjectKey},
+        assets::{HandleMap, ObjectKey, SfxKey},
+        audio::sfx::PlaySfx,
         collision::CollisionLayer,
         turret::Turret,
     },
@@ -113,6 +114,7 @@ fn destroy_building(mut commands: Commands, query: Query<(Entity, &Destructable)
     for (entity, destructable) in query.iter() {
         if destructable.health <= 0.0 {
             commands.entity(entity).despawn_recursive();
+            commands.trigger(PlaySfx::Key(SfxKey::Explode));
         }
     }
 }
