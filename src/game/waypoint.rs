@@ -69,6 +69,7 @@ fn spawn_waypoint(
             ..Default::default()
         },
         UiWaypoint(entity),
+        StateScoped(Screen::Playing),
     ));
 }
 

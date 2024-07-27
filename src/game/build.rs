@@ -7,8 +7,15 @@ use crate::{screen::Screen, ui::interaction::InteractionQuery, AppSet};
 use super::{
     assets::SfxKey,
     audio::sfx::PlaySfx,
+    camera::CameraTarget,
+    gameplay::Resources,
+    notifications::Notification,
     phase::GamePhase,
-    spawn::building::{BuildingType, SpawnBuilding},
+    spawn::{
+        asteroid::Asteroid,
+        building::{BuildingType, SpawnBuilding},
+    },
+    waypoint::Waypointed,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -19,14 +26,20 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, tick_debounce.in_set(AppSet::TickTimers));
     app.add_systems(
         Update,
-        update_mouse_pos
+        (
+            update_mouse_pos,
+            exit_build_mode_on_esc,
+            toggle_camera_distance,
+        )
             .run_if(in_state(GamePhase::Build))
             .in_set(AppSet::RecordInput),
     );
     app.add_systems(
         Update,
-        (handle_build_action, listen_for_build_mode, update_marker)
-            .chain()
+        (
+            (handle_build_action, listen_for_build_mode, update_marker).chain(),
+            scan,
+        )
             .run_if(in_state(GamePhase::Build))
             .in_set(AppSet::Update),
     );
@@ -34,9 +47,9 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
-struct BuildLocationMarker {
+pub struct BuildLocationMarker {
     mouse_world_pos: Vec2,
-    mode: Option<BuildingType>,
+    pub mode: Option<BuildingType>,
     just_clicked: bool,
     click_debounce: Timer,
 }
@@ -90,7 +103,7 @@ fn reset_marker(mut marker_query: Query<(&mut BuildLocationMarker, &mut Visibili
 }
 
 fn update_mouse_pos(
-    input: Res<ButtonInput<MouseButton>>,
+    mouse_input: Res<ButtonInput<MouseButton>>,
     camera: Query<(&Camera, &GlobalTransform)>,
     window: Query<&Window, With<PrimaryWindow>>,
     mut marker_query: Query<&mut BuildLocationMarker>,
@@ -111,10 +124,25 @@ fn update_mouse_pos(
         }
     }
 
-    // Record attack input.
+    // Record mouse click.
     for mut marker in &mut marker_query {
         marker.just_clicked =
-            input.just_released(MouseButton::Left) && marker.click_debounce.finished();
+            mouse_input.just_released(MouseButton::Left) && marker.click_debounce.finished();
+    }
+}
+
+fn exit_build_mode_on_esc(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut marker_query: Query<&mut BuildLocationMarker>,
+    mut resources: ResMut<Resources>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
+        for mut marker in &mut marker_query {
+            if let Some(building_type) = marker.mode.take() {
+                // refund resources
+                resources.delivered += building_type.cost();
+            }
+        }
     }
 }
 
@@ -142,15 +170,77 @@ fn update_marker(
 }
 
 #[derive(Component, Debug)]
-pub struct BuildAction(pub BuildingType);
+pub struct BuildAction {
+    pub building_type: BuildingType,
+    pub cost: u32,
+}
 
 fn handle_build_action(
     mut button_query: InteractionQuery<&BuildAction>,
     mut event_writer: EventWriter<EnterBuildMode>,
+    mut notification_writer: EventWriter<Notification>,
+    mut resources: ResMut<Resources>,
 ) {
     for (interaction, action) in &mut button_query {
         if matches!(interaction, Interaction::Pressed) {
-            event_writer.send(EnterBuildMode(action.0));
+            if resources.delivered < action.cost {
+                notification_writer.send(Notification("Not enough resources".to_string()));
+                continue;
+            }
+            resources.delivered -= action.cost;
+            event_writer.send(EnterBuildMode(action.building_type));
+        }
+    }
+}
+
+fn scan(
+    mouse_input: Res<ButtonInput<MouseButton>>,
+    asteroids_query: Query<(Entity, &Transform), With<Asteroid>>,
+    location_marker_query: Query<&BuildLocationMarker>,
+    mut notification_writer: EventWriter<Notification>,
+    mut commands: Commands,
+) {
+    if mouse_input.just_pressed(MouseButton::Right) {
+        let marker = location_marker_query.iter().next().unwrap();
+        let scan_pos = marker.mouse_world_pos;
+        let mut nearest_distance = f32::MAX;
+        for (entity, transform) in asteroids_query.iter() {
+            let distance = transform.translation.xy().distance(scan_pos);
+            if distance < nearest_distance {
+                nearest_distance = distance;
+            }
+            if distance < 20.0 {
+                commands
+                    .entity(entity)
+                    .insert(Visibility::Visible)
+                    .insert(Waypointed::new(Color::srgb(0.7, 0.4, 0.5)));
+            }
+        }
+        if nearest_distance < 20.0 {
+            notification_writer.send(Notification("Asteroid detected".to_string()));
+        } else {
+            notification_writer.send(Notification(format!(
+                "Nearest asteroid: {:.2} units away",
+                nearest_distance,
+            )));
+        }
+    }
+}
+
+fn toggle_camera_distance(
+    camera_target: Res<CameraTarget>,
+    mut target_query: Query<&mut Transform>,
+    input: Res<ButtonInput<KeyCode>>,
+) {
+    if input.just_pressed(KeyCode::KeyZ) {
+        if let Some(target) = camera_target.0 {
+            if let Ok(mut target_transform) = target_query.get_mut(target) {
+                if target_transform.translation.z < 250.0 {
+                    target_transform.translation.z = 600.0;
+                } else {
+                    target_transform.translation.z = 200.0;
+                }
+            }
         }
     }
 }

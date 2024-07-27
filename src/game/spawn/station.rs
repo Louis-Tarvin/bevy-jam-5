@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{ecs::component::StorageType, prelude::*};
 use bevy_health_bar3d::configuration::{BarHeight, BarSettings};
 
 use crate::{
@@ -19,9 +19,21 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Event, Debug)]
 pub struct SpawnStation;
 
-#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
 pub struct Station;
+
+impl Component for Station {
+    const STORAGE_TYPE: StorageType = StorageType::Table;
+
+    fn register_component_hooks(hooks: &mut bevy::ecs::component::ComponentHooks) {
+        // Trigger game over when this component is removed
+        hooks.on_remove(|mut world, _entity, _component_id| {
+            let mut next = world.get_resource_mut::<NextState<Screen>>().unwrap();
+            next.set(Screen::GameOver);
+        });
+    }
+}
 
 #[derive(Component)]
 pub struct StationCameraTarget;
@@ -50,7 +62,7 @@ fn spawn_station(
                 rotation_axis: transform.rotation * Vec3::Y,
                 rotation_speed: 0.05,
             },
-            Destructable::new(1000.0),
+            Destructable::new(2000.0),
             StateScoped(Screen::Playing),
             BarSettings::<Destructable> {
                 width: 10.0,

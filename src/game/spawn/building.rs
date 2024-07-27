@@ -27,6 +27,14 @@ pub enum BuildingType {
     Decoy,
     Turret,
 }
+impl BuildingType {
+    pub fn cost(&self) -> u32 {
+        match self {
+            BuildingType::Decoy => 5,
+            BuildingType::Turret => 20,
+        }
+    }
+}
 
 #[derive(Event, Debug)]
 pub struct SpawnBuilding {
@@ -60,52 +68,80 @@ fn spawn_building(
     trigger: Trigger<SpawnBuilding>,
     mut commands: Commands,
     object_handles: Res<HandleMap<ObjectKey>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let event = trigger.event();
     match event.building_type {
         BuildingType::Decoy => {
-            commands.spawn((
-                Name::new("Decoy"),
-                Destructable::new(200.0),
-                SceneBundle {
-                    scene: object_handles[&ObjectKey::Decoy].clone_weak(),
-                    transform: Transform::from_translation(event.position),
-                    ..Default::default()
-                },
-                StateScoped(Screen::Playing),
-                BarSettings::<Destructable> {
-                    width: 5.0,
-                    offset: 3.0,
-                    height: BarHeight::Static(0.5),
-                    ..Default::default()
-                },
-            ));
+            commands
+                .spawn((
+                    Name::new("Decoy"),
+                    Destructable::new(300.0),
+                    SceneBundle {
+                        scene: object_handles[&ObjectKey::Decoy].clone_weak(),
+                        transform: Transform::from_translation(event.position)
+                            .with_scale(Vec3::splat(2.0)),
+                        ..Default::default()
+                    },
+                    StateScoped(Screen::Playing),
+                    BarSettings::<Destructable> {
+                        width: 5.0,
+                        offset: 3.0,
+                        height: BarHeight::Static(0.5),
+                        ..Default::default()
+                    },
+                ))
+                .with_children(|parent| {
+                    parent.spawn((
+                        Name::new("Light"),
+                        PbrBundle {
+                            mesh: meshes.add(Sphere { radius: 0.1 }.mesh().ico(1).unwrap()),
+                            material: materials.add(Color::srgb(0.5, 0.5, 6.0)),
+                            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.3)),
+                            ..Default::default()
+                        },
+                    ));
+                });
         }
         BuildingType::Turret => {
-            commands.spawn((
-                Name::new("Turret"),
-                Turret::new(1.0),
-                Destructable::new(200.0),
-                SceneBundle {
-                    scene: object_handles[&ObjectKey::Decoy].clone_weak(),
-                    transform: Transform::from_translation(event.position),
-                    ..Default::default()
-                },
-                StateScoped(Screen::Playing),
-                BarSettings::<Destructable> {
-                    width: 5.0,
-                    offset: 3.0,
-                    height: BarHeight::Static(0.5),
-                    ..Default::default()
-                },
-                Collider::sphere(13.0),
-                RigidBody::Static,
-                Sensor,
-                CollisionLayers::new(
-                    [CollisionLayer::Turret],
-                    LayerMask::from(CollisionLayer::Enemy),
-                ),
-            ));
+            commands
+                .spawn((
+                    Name::new("Turret"),
+                    Turret::new(1.0),
+                    Destructable::new(150.0),
+                    SceneBundle {
+                        scene: object_handles[&ObjectKey::Decoy].clone_weak(),
+                        transform: Transform::from_translation(event.position)
+                            .with_scale(Vec3::splat(2.0)),
+                        ..Default::default()
+                    },
+                    StateScoped(Screen::Playing),
+                    BarSettings::<Destructable> {
+                        width: 5.0,
+                        offset: 3.0,
+                        height: BarHeight::Static(0.5),
+                        ..Default::default()
+                    },
+                    Collider::sphere(13.0),
+                    RigidBody::Static,
+                    Sensor,
+                    CollisionLayers::new(
+                        [CollisionLayer::Turret],
+                        LayerMask::from(CollisionLayer::Enemy),
+                    ),
+                ))
+                .with_children(|parent| {
+                    parent.spawn((
+                        Name::new("Light"),
+                        PbrBundle {
+                            mesh: meshes.add(Sphere { radius: 0.1 }.mesh().ico(1).unwrap()),
+                            material: materials.add(Color::srgb(6.0, 0.5, 0.5)),
+                            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.3)),
+                            ..Default::default()
+                        },
+                    ));
+                });
         }
     }
 }

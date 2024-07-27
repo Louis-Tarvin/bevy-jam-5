@@ -124,12 +124,14 @@ fn mine(
 fn deliver_resources(
     mut resources: ResMut<Resources>,
     mut query: Query<&Transform, With<MiningController>>,
+    mut commands: Commands,
 ) {
     // If within 15m of the station (origin), deliver resources
     for transform in query.iter_mut() {
-        if transform.translation.xy().length() < 15.0 {
+        if transform.translation.xy().length() < 15.0 && resources.gathered > 0 {
             resources.delivered += resources.gathered;
             resources.gathered = 0;
+            commands.trigger(PlaySfx::Key(SfxKey::Collect));
         }
     }
 }

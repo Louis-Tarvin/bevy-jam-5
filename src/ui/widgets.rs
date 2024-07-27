@@ -15,6 +15,8 @@ pub trait Widgets {
     /// Spawn a simple text label.
     fn label(&mut self, text: impl Into<String>) -> EntityCommands;
 
+    fn tooltip_label(&mut self, text: impl Into<String>) -> EntityCommands;
+
     fn dock(&mut self) -> EntityCommands;
 
     fn building_button(
@@ -114,6 +116,35 @@ impl<T: Spawn> Widgets for T {
                     text,
                     TextStyle {
                         font_size: 24.0,
+                        color: LABEL_TEXT,
+                        ..default()
+                    },
+                ),
+            ));
+        });
+        entity
+    }
+
+    fn tooltip_label(&mut self, text: impl Into<String>) -> EntityCommands {
+        let mut entity = self.spawn((
+            Name::new("Label"),
+            NodeBundle {
+                style: Style {
+                    width: Px(600.0),
+                    justify_content: JustifyContent::Start,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                ..default()
+            },
+        ));
+        entity.with_children(|children| {
+            children.spawn((
+                Name::new("Label Text"),
+                TextBundle::from_section(
+                    text,
+                    TextStyle {
+                        font_size: 20.0,
                         color: LABEL_TEXT,
                         ..default()
                     },

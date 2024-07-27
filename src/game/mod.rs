@@ -18,6 +18,7 @@ mod combat;
 pub mod gameplay;
 mod mining;
 mod movement;
+pub mod notifications;
 pub mod phase;
 pub mod spawn;
 pub mod turret;
@@ -31,6 +32,7 @@ pub(super) fn plugin(app: &mut App) {
         HealthBarPlugin::<Destructable>::default(),
         HealthBarPlugin::<InteractionProgressBar>::default(),
         HealthBarPlugin::<Asteroid>::default(),
+        notifications::plugin,
     ));
     app.add_plugins((
         audio::plugin,

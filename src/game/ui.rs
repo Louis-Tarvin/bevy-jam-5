@@ -28,17 +28,20 @@ pub struct ResourceCountUi;
 pub struct SpinnerCoreUi;
 
 #[derive(Component)]
-pub struct BuildDockUi;
+pub struct BuildUi;
 
 #[derive(Component)]
-pub struct GatherDockUi;
+pub struct GatherUi;
 
 #[derive(Component)]
 pub struct GatherResourceCountUi;
 
+#[derive(Component)]
+pub struct CombatUi;
+
 pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) {
     let style = TextStyle {
-        font_size: 20.0,
+        font_size: 24.0,
         color: Color::WHITE,
         ..Default::default()
     };
@@ -60,6 +63,76 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
                     ..Default::default()
                 }),
             ));
+
+            parent
+                .spawn((
+                    Name::new("BuildInfo"),
+                    BuildUi,
+                    NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            top: Val::Px(40.0),
+                            left: Val::Px(10.0),
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Start,
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    },
+                ))
+                .with_children(|parent| {
+                    parent.tooltip_label("Left click - pan");
+                    parent.tooltip_label("Space/E - reset camera");
+                    parent.tooltip_label("Right click - scan for asteroids at cursor");
+                    parent.tooltip_label("Z - toggle zoom");
+                });
+
+            parent
+                .spawn((
+                    Name::new("GatherInfo"),
+                    GatherUi,
+                    NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            top: Val::Px(40.0),
+                            left: Val::Px(10.0),
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Start,
+                            ..Default::default()
+                        },
+                        visibility: Visibility::Hidden,
+                        ..Default::default()
+                    },
+                ))
+                .with_children(|parent| {
+                    parent.tooltip_label("WASD/Arrow keys - ship thrust");
+                    parent.tooltip_label("Space/E (hold) - mine asteroid below ship");
+                    parent.tooltip_label(
+                        "Held resources must be delivered to the base before they can be used",
+                    );
+                });
+
+            parent
+                .spawn((
+                    Name::new("CombatInfo"),
+                    CombatUi,
+                    NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            top: Val::Px(40.0),
+                            left: Val::Px(10.0),
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Start,
+                            ..Default::default()
+                        },
+                        visibility: Visibility::Hidden,
+                        ..Default::default()
+                    },
+                ))
+                .with_children(|parent| {
+                    parent.tooltip_label("WASD/Arrow keys - ship thrust");
+                    parent.tooltip_label("Left click - fire turret at cursor position");
+                });
 
             parent.spawn((
                 Name::new("SpinnerFrame"),
@@ -90,31 +163,37 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
                 },
             ));
 
-            parent.dock().insert(BuildDockUi).with_children(|parent| {
+            parent.dock().insert(BuildUi).with_children(|parent| {
                 parent.building_button(
                     "Decoy",
                     "A decoy to distract enemies",
-                    10,
-                    BuildAction(BuildingType::Decoy),
+                    5,
+                    BuildAction {
+                        building_type: BuildingType::Decoy,
+                        cost: 5,
+                    },
                 );
                 parent.building_button(
                     "Turret",
                     "A turret to shoot enemies",
                     20,
-                    BuildAction(BuildingType::Turret),
+                    BuildAction {
+                        building_type: BuildingType::Turret,
+                        cost: 20,
+                    },
                 );
             });
 
             parent
                 .dock()
-                .insert(GatherDockUi)
+                .insert(GatherUi)
                 .insert(Visibility::Hidden)
                 .with_children(|parent| {
                     parent
                         .spawn(NodeBundle {
                             style: Style {
-                                width: Val::Px(150.0),
-                                height: Val::Px(60.0),
+                                width: Val::Px(350.0),
+                                height: Val::Px(80.0),
                                 justify_content: JustifyContent::Center,
                                 align_items: AlignItems::Center,
                                 ..Default::default()
@@ -127,13 +206,11 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
                                 Name::new("GatherResourceCount"),
                                 GatherResourceCountUi,
                                 TextBundle::from_sections([
-                                    TextSection::new("Resources: ", style.clone()),
+                                    TextSection::new("Resources held: ", style.clone()),
                                     TextSection::from_style(style),
                                 ])
                                 .with_style(Style {
-                                    position_type: PositionType::Absolute,
-                                    bottom: Val::Px(10.0),
-                                    left: Val::Px(10.0),
+                                    align_self: AlignSelf::Center,
                                     ..Default::default()
                                 }),
                             ));

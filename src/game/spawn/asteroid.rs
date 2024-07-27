@@ -29,6 +29,7 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Event, Debug)]
 pub struct SpawnAsteroid {
     pub position: Vec3,
+    pub is_visible: bool,
 }
 
 #[derive(Component, Debug, Default, Reflect)]
@@ -57,7 +58,12 @@ fn spawn_asteroid(
         rotation: random_rotation,
         ..Default::default()
     };
-    commands.spawn((
+    let visibility = if trigger.event().is_visible {
+        Visibility::Visible
+    } else {
+        Visibility::Hidden
+    };
+    let mut entity = commands.spawn((
         Name::new("Asteroid"),
         Asteroid {
             contained_resources: 10,
@@ -66,6 +72,7 @@ fn spawn_asteroid(
         SceneBundle {
             scene: object_handles[&ObjectKey::Asteroid].clone_weak(),
             transform,
+            visibility,
             ..Default::default()
         },
         Spin {
@@ -85,9 +92,11 @@ fn spawn_asteroid(
             height: BarHeight::Static(0.5),
             ..Default::default()
         },
-        Waypointed::new(Color::srgb(0.7, 0.4, 0.5)),
         StateScoped(Screen::Playing),
     ));
+    if trigger.event().is_visible {
+        entity.insert(Waypointed::new(Color::srgb(0.7, 0.4, 0.5)));
+    }
 }
 
 #[derive(Event, Debug)]
@@ -106,5 +115,8 @@ pub fn spawn_random_asteroid(
         -5.0,
     );
     gameplay_manager.asteroid_spawn_distance += 10.0;
-    commands.trigger(SpawnAsteroid { position });
+    commands.trigger(SpawnAsteroid {
+        position,
+        is_visible: false,
+    });
 }
