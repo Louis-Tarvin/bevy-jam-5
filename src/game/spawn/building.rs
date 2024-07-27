@@ -1,8 +1,16 @@
+use avian3d::{
+    collision::{Collider, CollisionLayers, LayerMask, Sensor},
+    dynamics::rigid_body::RigidBody,
+};
 use bevy::prelude::*;
 use bevy_health_bar3d::configuration::{BarHeight, BarSettings, Percentage};
 
 use crate::{
-    game::assets::{HandleMap, ObjectKey},
+    game::{
+        assets::{HandleMap, ObjectKey},
+        collision::CollisionLayer,
+        turret::Turret,
+    },
     screen::Screen,
     AppSet,
 };
@@ -16,6 +24,7 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Copy, Clone, Debug, Reflect)]
 pub enum BuildingType {
     Decoy,
+    Turret,
 }
 
 #[derive(Event, Debug)]
@@ -69,6 +78,32 @@ fn spawn_building(
                     height: BarHeight::Static(0.5),
                     ..Default::default()
                 },
+            ));
+        }
+        BuildingType::Turret => {
+            commands.spawn((
+                Name::new("Turret"),
+                Turret::new(1.0),
+                Destructable::new(200.0),
+                SceneBundle {
+                    scene: object_handles[&ObjectKey::Decoy].clone_weak(),
+                    transform: Transform::from_translation(event.position),
+                    ..Default::default()
+                },
+                StateScoped(Screen::Playing),
+                BarSettings::<Destructable> {
+                    width: 5.0,
+                    offset: 3.0,
+                    height: BarHeight::Static(0.5),
+                    ..Default::default()
+                },
+                Collider::sphere(13.0),
+                RigidBody::Static,
+                Sensor,
+                CollisionLayers::new(
+                    [CollisionLayer::Turret],
+                    LayerMask::from(CollisionLayer::Enemy),
+                ),
             ));
         }
     }

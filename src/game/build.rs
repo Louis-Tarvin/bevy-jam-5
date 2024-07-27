@@ -32,10 +32,10 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
-pub struct BuildLocationMarker {
-    pub mouse_world_pos: Vec2,
-    pub mode: Option<BuildingType>,
-    pub just_clicked: bool,
+struct BuildLocationMarker {
+    mouse_world_pos: Vec2,
+    mode: Option<BuildingType>,
+    just_clicked: bool,
     click_debounce: Timer,
 }
 

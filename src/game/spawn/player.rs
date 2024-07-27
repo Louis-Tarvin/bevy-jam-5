@@ -1,12 +1,13 @@
 //! Spawn the player.
 
 use bevy::prelude::*;
+use bevy_health_bar3d::configuration::{BarHeight, BarSettings};
 
 use crate::{
     game::{
         assets::{HandleMap, ObjectKey},
         combat::CombatController,
-        interact::InteractionController,
+        interact::{InteractionController, InteractionProgressBar},
         movement::{MovementController, Velocity},
     },
     screen::Screen,
@@ -39,6 +40,7 @@ fn spawn_combat_ship(
             Name::new("CombatShip"),
             SceneBundle {
                 scene: object_handles[&ObjectKey::ShipBody].clone_weak(),
+                transform: Transform::from_xyz(10.0, -10.0, 0.0),
                 ..Default::default()
             },
             CombatShip,
@@ -93,6 +95,13 @@ fn spawn_mining_ship(
             InteractionController::new(1.0),
             Velocity::default(),
             StateScoped(Screen::Playing),
+            InteractionProgressBar::default(),
+            BarSettings::<InteractionProgressBar> {
+                width: 5.0,
+                offset: 3.0,
+                height: BarHeight::Static(0.5),
+                ..Default::default()
+            },
         ))
         .with_children(|parent| {
             parent.spawn((

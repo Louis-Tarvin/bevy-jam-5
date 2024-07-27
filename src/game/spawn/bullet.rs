@@ -17,6 +17,9 @@ pub struct BulletAssets {
     pub material: Option<Handle<StandardMaterial>>,
 }
 
+#[derive(Component, Debug)]
+pub struct Bullet;
+
 fn spawn_bullet(
     trigger: Trigger<ShootEvent>,
     mut commands: Commands,
@@ -39,6 +42,7 @@ fn spawn_bullet(
 
     commands.spawn((
         Name::new("Bullet"),
+        Bullet,
         PbrBundle {
             mesh: bullet_assets.mesh.clone().unwrap(),
             material: bullet_assets.material.clone().unwrap(),

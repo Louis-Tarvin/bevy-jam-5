@@ -10,4 +10,5 @@ pub enum CollisionLayer {
     Asteroid,
     Enemy,
     Bullet,
+    Turret,
 }

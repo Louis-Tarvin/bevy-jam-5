@@ -71,7 +71,7 @@ fn spawn_enemy(
         Collider::sphere(1.0),
         CollisionLayers::new(
             [CollisionLayer::Enemy],
-            LayerMask::from(CollisionLayer::Bullet),
+            LayerMask::from([CollisionLayer::Bullet, CollisionLayer::Turret]),
         ),
         Sensor,
         RigidBody::Kinematic,

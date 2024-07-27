@@ -91,7 +91,7 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
                     "Turret",
                     "A turret to shoot enemies",
                     20,
-                    BuildAction(BuildingType::Decoy),
+                    BuildAction(BuildingType::Turret),
                 );
             });
         });

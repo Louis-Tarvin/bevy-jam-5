@@ -1,30 +1,26 @@
 use avian3d::spatial_query::{SpatialQuery, SpatialQueryFilter};
 use bevy::prelude::*;
+use bevy_health_bar3d::configuration::{ColorScheme, ForegroundColor, Percentage};
 
 use crate::AppSet;
 
-use super::{
-    collision::CollisionLayer,
-    gameplay::Resources,
-    phase::GamePhase,
-    spawn::building::{BuildingType, SpawnBuilding},
-};
+use super::{collision::CollisionLayer, gameplay::Resources, phase::GamePhase};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<InteractionController>();
+    app.insert_resource(
+        ColorScheme::<InteractionProgressBar>::new().foreground_color(ForegroundColor::Static(
+            bevy::color::palettes::tailwind::ORANGE_600.into(),
+        )),
+    );
     app.add_systems(
         Update,
         record_interaction_controller.in_set(AppSet::RecordInput),
     );
     app.add_systems(
         Update,
-        mine.run_if(in_state(GamePhase::Gather))
-            .in_set(AppSet::Update),
-    );
-    app.add_systems(
-        Update,
-        build
-            .run_if(in_state(GamePhase::Build))
+        (mine, set_progress)
+            .run_if(in_state(GamePhase::Gather))
             .in_set(AppSet::Update),
     );
 }
@@ -34,6 +30,7 @@ pub(super) fn plugin(app: &mut App) {
 pub struct InteractionController {
     pub interacting: bool,
     pub just_interacted: bool,
+    mining_time: f32,
     mining_speed_multiplier: f32,
     timer: Timer,
 }
@@ -42,6 +39,7 @@ impl InteractionController {
         Self {
             interacting: false,
             just_interacted: false,
+            mining_time,
             mining_speed_multiplier: 1.0,
             timer: Timer::from_seconds(mining_time, TimerMode::Repeating),
         }
@@ -56,6 +54,29 @@ fn record_interaction_controller(
         controller.interacting = input.pressed(KeyCode::KeyE) || input.pressed(KeyCode::Space);
         controller.just_interacted =
             input.just_pressed(KeyCode::KeyE) || input.just_pressed(KeyCode::Space);
+        if input.just_released(KeyCode::KeyE) || input.just_released(KeyCode::Space) {
+            controller.timer.reset();
+        }
+    }
+}
+
+#[derive(Component, Debug, Default, Reflect)]
+#[reflect(Component)]
+pub struct InteractionProgressBar(pub f32);
+
+impl Percentage for InteractionProgressBar {
+    fn value(&self) -> f32 {
+        self.0
+    }
+}
+
+fn set_progress(mut progress_query: Query<(&InteractionController, &mut InteractionProgressBar)>) {
+    for (controller, mut progress) in progress_query.iter_mut() {
+        if controller.interacting {
+            progress.0 = controller.timer.elapsed_secs() / controller.mining_time;
+        } else {
+            progress.0 = 0.0;
+        }
     }
 }
 
@@ -83,22 +104,6 @@ fn mine(
                     info!("Mined 1 resource. Total: {}", resources.0);
                 }
             }
-        }
-    }
-}
-
-fn build(
-    query: Query<(&Transform, &InteractionController)>,
-    mut resources: ResMut<Resources>,
-    mut commands: Commands,
-) {
-    for (transform, controller) in query.iter() {
-        if controller.just_interacted && resources.0 >= 1 {
-            resources.0 -= 1;
-            commands.trigger(SpawnBuilding {
-                building_type: BuildingType::Decoy,
-                position: Vec3::new(transform.translation.x, transform.translation.y, -3.0),
-            });
         }
     }
 }

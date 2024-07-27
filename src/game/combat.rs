@@ -5,7 +5,10 @@ use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::AppSet;
 
-use super::{phase::GamePhase, spawn::player::CombatShipTurret};
+use super::{
+    phase::GamePhase,
+    spawn::{bullet::Bullet, player::CombatShipTurret},
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CombatController>();
@@ -142,10 +145,13 @@ fn shoot(
 
 fn handle_enemy_bullet_collision(
     mut collision_event_reader: EventReader<Collision>,
+    bullets: Query<Entity, With<Bullet>>,
     mut commands: Commands,
 ) {
     for Collision(contacts) in collision_event_reader.read() {
-        commands.entity(contacts.entity1).despawn_recursive();
-        commands.entity(contacts.entity2).despawn_recursive();
+        if bullets.contains(contacts.entity1) || bullets.contains(contacts.entity2) {
+            commands.entity(contacts.entity1).despawn_recursive();
+            commands.entity(contacts.entity2).despawn_recursive();
+        }
     }
 }
