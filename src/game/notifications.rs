@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::util::DestroyAfterSecs;
+use super::{assets::SfxKey, audio::sfx::PlaySfx, util::DestroyAfterSecs};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_event::<Notification>();
@@ -15,6 +15,7 @@ pub struct NotificationText;
 
 fn listen_for_notifications(mut event_reader: EventReader<Notification>, mut commands: Commands) {
     for notification in event_reader.read() {
+        commands.trigger(PlaySfx::Key(SfxKey::Ping));
         commands.spawn((
             TextBundle {
                 text: Text::from_section(
@@ -33,7 +34,7 @@ fn listen_for_notifications(mut event_reader: EventReader<Notification>, mut com
                 },
                 ..Default::default()
             },
-            DestroyAfterSecs::new(5.0),
+            DestroyAfterSecs::new(6.0),
             NotificationText,
         ));
     }

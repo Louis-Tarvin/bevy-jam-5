@@ -191,7 +191,7 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
                 );
                 parent.building_button(
                     "Mining Speed Upgrade",
-                    "Upgrades mining speed so long as the building is not destroyed",
+                    "Upgrades mining speed (so long as this building is not destroyed)",
                     BuildingType::MiningUpgrade.cost(),
                     BuildAction {
                         building_type: BuildingType::MiningUpgrade,
@@ -199,7 +199,7 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
                 );
                 parent.building_button(
                     "Fire Rate Upgrade",
-                    "Upgrades fire rate so long as the building is not destroyed",
+                    "Upgrades the combat ship's fire rate (so long as this building is not destroyed)",
                     BuildingType::FireRateUpgrade.cost(),
                     BuildAction {
                         building_type: BuildingType::FireRateUpgrade,

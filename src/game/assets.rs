@@ -83,6 +83,7 @@ pub enum SfxKey {
     Explode,
     Build,
     Collect,
+    Ping,
 }
 
 impl AssetKey for SfxKey {
@@ -108,6 +109,7 @@ impl FromWorld for HandleMap<SfxKey> {
             ),
             (SfxKey::Build, asset_server.load("audio/sfx/build.ogg")),
             (SfxKey::Collect, asset_server.load("audio/sfx/collect.ogg")),
+            (SfxKey::Ping, asset_server.load("audio/sfx/ping.ogg")),
         ]
         .into()
     }

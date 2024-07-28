@@ -129,21 +129,22 @@ fn update_phase(
         match current_state.get() {
             GamePhase::Build => next_state.set(GamePhase::Gather),
             GamePhase::Gather => {
-                for _ in 0..5 {
+                for _ in 0..5 + (manager.cycle as f32 * 2.5) as u32 {
                     commands.trigger(SpawnEnemy {
                         distance: 100.0,
                         damage_mult: manager.enemy_damage_multiplier,
                     });
                 }
+                manager.stop_spawning();
                 next_state.set(GamePhase::Combat);
             }
             GamePhase::Combat => {
-                if manager.even_cycle {
+                // A full cycle has passed. Increase the difficulty
+                manager.new_cycle();
+                if manager.cycle % 2 == 0 {
                     // Just in case the soundtrack has desynced
                     commands.trigger(PlaySoundtrack::Key(SoundtrackKey::Gameplay));
                 }
-                // A full cycle has passed. Increase the difficulty
-                manager.new_cycle();
                 next_state.set(GamePhase::Build);
             }
         }

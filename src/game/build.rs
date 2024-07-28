@@ -103,9 +103,15 @@ fn init_marker(
     ));
 }
 
-fn reset_marker(mut marker_query: Query<(&mut BuildLocationMarker, &mut Visibility)>) {
+fn reset_marker(
+    mut marker_query: Query<(&mut BuildLocationMarker, &mut Visibility)>,
+    mut resources: ResMut<Resources>,
+) {
     for (mut marker, mut visibility) in marker_query.iter_mut() {
-        marker.mode = None;
+        if let Some(building_type) = marker.mode.take() {
+            // refund resources
+            resources.delivered += building_type.cost();
+        }
         *visibility = Visibility::Hidden;
     }
 }
@@ -244,18 +250,18 @@ fn scan(
         let scan_pos = marker.mouse_world_pos;
         let mut nearest_distance = f32::MAX;
         for (entity, transform) in asteroids_query.iter() {
-            let sq_distance = transform.translation.xy().distance_squared(scan_pos);
-            if sq_distance < nearest_distance {
-                nearest_distance = sq_distance;
+            let distance = transform.translation.xy().distance(scan_pos);
+            if distance < nearest_distance {
+                nearest_distance = distance;
             }
-            if sq_distance < 400.0 {
+            if distance < 25.0 {
                 commands
                     .entity(entity)
                     .insert(Visibility::Visible)
                     .insert(Waypointed::new(ASTEROID_WAYPOINT_COLOR));
             }
         }
-        if nearest_distance < 400.0 {
+        if nearest_distance < 25.0 {
             notification_writer.send(Notification("Asteroid detected".to_string()));
         } else {
             notification_writer.send(Notification(format!(

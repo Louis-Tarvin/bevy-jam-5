@@ -167,8 +167,5 @@ fn handle_enemy_bullet_collision(
 fn update_attack_time(mut controller_query: Query<&mut CombatController>, upgrades: Res<Upgrades>) {
     for mut controller in &mut controller_query {
         controller.attack_time = 1.0 / (1.0 + upgrades.fire_rate as f32);
-        if upgrades.fire_rate > 0 {
-            controller.attack_time += 0.2;
-        }
     }
 }

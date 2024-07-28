@@ -150,7 +150,7 @@ fn deliver_resources(
 ) {
     // If within 15m of the station (origin), deliver resources
     for transform in query.iter_mut() {
-        if transform.translation.xy().length() < 15.0 && resources.gathered > 0 {
+        if transform.translation.xy().length() < 25.0 && resources.gathered > 0 {
             resources.delivered += resources.gathered;
             notification_writer.send(Notification(format!(
                 "Delivered {} resources to the base.",
@@ -197,19 +197,15 @@ fn scan(
             let scan_pos = ship_transform.translation;
             let mut nearest_distance = f32::MAX;
             for transform in asteroids_query.iter() {
-                let sq_distance = transform.translation.xy().distance_squared(scan_pos.xy());
-                if sq_distance < nearest_distance {
-                    nearest_distance = sq_distance;
+                let distance = transform.translation.xy().distance(scan_pos.xy());
+                if distance < nearest_distance {
+                    nearest_distance = distance;
                 }
             }
-            if nearest_distance < 400.0 {
-                notification_writer.send(Notification("Asteroid detected".to_string()));
-            } else {
-                notification_writer.send(Notification(format!(
-                    "Nearest asteroid: {:.2} units away",
-                    nearest_distance,
-                )));
-            }
+            notification_writer.send(Notification(format!(
+                "Nearest asteroid: {:.2} units away",
+                nearest_distance,
+            )));
         }
     }
 }
@@ -227,7 +223,7 @@ fn reveal_nearby_asteroids(
                     .translation
                     .xy()
                     .distance_squared(asteroid_transform.translation.xy())
-                    < 400.0
+                    < 500.0
             {
                 notification_writer.send(Notification("Asteroid detected".to_string()));
                 commands

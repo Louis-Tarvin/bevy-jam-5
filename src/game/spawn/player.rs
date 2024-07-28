@@ -46,7 +46,7 @@ fn spawn_combat_ship(
             },
             CombatShip,
             MovementController::new(50.0, 0.5, 100.0),
-            CombatController::new(1.0, 5.0),
+            CombatController::new(1.0, 6.0),
             Velocity::default(),
             StateScoped(Screen::Playing),
         ))

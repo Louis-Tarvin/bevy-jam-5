@@ -116,7 +116,7 @@ pub fn spawn_random_asteroid(
         random_angle.sin() * gameplay_manager.asteroid_spawn_distance,
         -5.0,
     );
-    gameplay_manager.asteroid_spawn_distance += 10.0;
+    gameplay_manager.asteroid_spawn_distance += 5.0;
     commands.trigger(SpawnAsteroid {
         position,
         is_visible: false,

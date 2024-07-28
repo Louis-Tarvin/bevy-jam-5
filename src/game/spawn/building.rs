@@ -35,11 +35,11 @@ pub enum BuildingType {
 impl BuildingType {
     pub fn cost(&self) -> u32 {
         match self {
-            BuildingType::Decoy => 4,
-            BuildingType::Turret => 13,
-            BuildingType::Sniper => 20,
-            BuildingType::FireRateUpgrade => 10,
-            BuildingType::MiningUpgrade => 18,
+            BuildingType::Decoy => 3,
+            BuildingType::Turret => 12,
+            BuildingType::Sniper => 15,
+            BuildingType::FireRateUpgrade => 9,
+            BuildingType::MiningUpgrade => 14,
         }
     }
 }
@@ -85,7 +85,7 @@ fn spawn_building(
             commands
                 .spawn((
                     Name::new("Decoy"),
-                    Destructable::new(300.0),
+                    Destructable::new(200.0),
                     SceneBundle {
                         scene: object_handles[&ObjectKey::Decoy].clone_weak(),
                         transform: Transform::from_translation(event.position)
@@ -155,7 +155,7 @@ fn spawn_building(
             commands
                 .spawn((
                     Name::new("Sniper"),
-                    Turret::new(3.0),
+                    Turret::new(2.5),
                     Destructable::new(50.0),
                     SceneBundle {
                         scene: object_handles[&ObjectKey::Decoy].clone_weak(),
@@ -194,7 +194,7 @@ fn spawn_building(
             commands
                 .spawn((
                     Name::new("Fire-rate upgrade"),
-                    Destructable::new(50.0),
+                    Destructable::new(60.0),
                     Upgrade(UpgradeType::FireRate),
                     SceneBundle {
                         scene: object_handles[&ObjectKey::Upgrade].clone_weak(),
@@ -225,7 +225,7 @@ fn spawn_building(
             commands
                 .spawn((
                     Name::new("Mining upgrade"),
-                    Destructable::new(50.0),
+                    Destructable::new(60.0),
                     Upgrade(UpgradeType::MiningSpeed),
                     SceneBundle {
                         scene: object_handles[&ObjectKey::Upgrade].clone_weak(),
