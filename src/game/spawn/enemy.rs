@@ -29,7 +29,7 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Event, Debug)]
 pub struct SpawnEnemy {
-    pub position: Vec3,
+    pub distance: f32,
     pub damage_mult: f32,
 }
 
@@ -64,23 +64,28 @@ fn spawn_enemy(
     mut commands: Commands,
     object_handles: Res<HandleMap<ObjectKey>>,
 ) {
+    let event = trigger.event();
+
     let mut rng = rand::thread_rng();
+    let random_angle = rng.gen::<f32>() * std::f32::consts::PI * 2.0;
+    let position = Vec3::new(
+        random_angle.cos() * event.distance,
+        random_angle.sin() * event.distance,
+        -3.0,
+    );
     let mut random_rotation = Quat::IDENTITY;
     random_rotation *= Quat::from_rotation_x(f32::to_radians(rng.gen_range(0.0..360.0)));
     random_rotation *= Quat::from_rotation_y(f32::to_radians(rng.gen_range(0.0..360.0)));
     random_rotation *= Quat::from_rotation_z(f32::to_radians(rng.gen_range(0.0..360.0)));
 
-    let event = trigger.event();
-
     let transform = Transform {
-        translation: event.position,
+        translation: position,
         rotation: random_rotation,
         scale: Vec3::splat(event.damage_mult),
-        ..Default::default()
     };
     commands.spawn((
         Name::new("Enemy"),
-        Enemy::new(8.0 * event.damage_mult),
+        Enemy::new(5.0 * event.damage_mult),
         SceneBundle {
             scene: object_handles[&ObjectKey::Enemy].clone_weak(),
             transform,

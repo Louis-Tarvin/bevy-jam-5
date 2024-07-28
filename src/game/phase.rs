@@ -1,6 +1,10 @@
 use bevy::prelude::*;
 
-use crate::{screen::Screen, AppSet};
+use crate::{
+    game::{assets::SoundtrackKey, audio::soundtrack::PlaySoundtrack, spawn::enemy::SpawnEnemy},
+    screen::Screen,
+    AppSet,
+};
 
 use super::{
     camera::CameraTarget,
@@ -119,22 +123,30 @@ fn update_phase(
     current_state: Res<State<GamePhase>>,
     mut next_state: ResMut<NextState<GamePhase>>,
     mut manager: ResMut<GameplayManager>,
+    mut commands: Commands,
 ) {
     if manager.current_phase_time > PHASE_DURATION {
-        info!(
-            "update_phase called with current_phase_time: {}",
-            manager.current_phase_time
-        );
         match current_state.get() {
-            GamePhase::Gather => next_state.set(GamePhase::Combat),
             GamePhase::Build => next_state.set(GamePhase::Gather),
+            GamePhase::Gather => {
+                for _ in 0..5 {
+                    commands.trigger(SpawnEnemy {
+                        distance: 100.0,
+                        damage_mult: manager.enemy_damage_multiplier,
+                    });
+                }
+                next_state.set(GamePhase::Combat);
+            }
             GamePhase::Combat => {
+                if manager.even_cycle {
+                    // Just in case the soundtrack has desynced
+                    commands.trigger(PlaySoundtrack::Key(SoundtrackKey::Gameplay));
+                }
                 // A full cycle has passed. Increase the difficulty
-                manager.enemy_spawn_rate_multiplier += 0.4;
-                manager.enemy_damage_multiplier += 0.1;
-                next_state.set(GamePhase::Build)
+                manager.new_cycle();
+                next_state.set(GamePhase::Build);
             }
         }
-        manager.current_phase_time = (manager.elapsed_time + 0.01) % PHASE_DURATION;
+        manager.current_phase_time -= PHASE_DURATION;
     }
 }

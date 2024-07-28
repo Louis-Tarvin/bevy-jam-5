@@ -11,7 +11,9 @@ use super::{
     gameplay::Resources,
     notifications::Notification,
     phase::GamePhase,
-    spawn::asteroid::{Asteroid, SpawnRandomAsteroid},
+    spawn::asteroid::{Asteroid, SpawnRandomAsteroid, ASTEROID_WAYPOINT_COLOR},
+    upgrades::Upgrades,
+    waypoint::Waypointed,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -27,11 +29,20 @@ pub(super) fn plugin(app: &mut App) {
     );
     app.add_systems(
         Update,
-        ((mine, destroy_empty_asteroids).chain(), set_progress)
+        (
+            (mine, destroy_empty_asteroids).chain(),
+            set_progress,
+            reveal_nearby_asteroids,
+            scan,
+        )
             .run_if(in_state(GamePhase::Gather))
             .in_set(AppSet::Update),
     );
     app.add_systems(Update, deliver_resources.in_set(AppSet::Update));
+    app.add_systems(
+        Update,
+        update_mining_speed_mult.run_if(resource_changed::<Upgrades>),
+    );
 }
 
 #[derive(Component, Reflect, Default)]
@@ -122,6 +133,15 @@ fn mine(
     }
 }
 
+fn update_mining_speed_mult(
+    mut controller_query: Query<&mut MiningController>,
+    upgrades: Res<Upgrades>,
+) {
+    for mut controller in controller_query.iter_mut() {
+        controller.mining_speed_multiplier = 1.0 + (upgrades.mining_speed as f32 * 0.5);
+    }
+}
+
 fn deliver_resources(
     mut resources: ResMut<Resources>,
     mut query: Query<&Transform, With<MiningController>>,
@@ -159,6 +179,62 @@ fn destroy_empty_asteroids(
         }
     }
     if !are_visible_astroids && despawned {
-        notification_writer.send(Notification("All asteroids have been mined. In the build phase, use right-click to scan for more asteroids.".to_string()));
+        notification_writer.send(Notification(
+            "All known asteroids have been mined. Use right-click to locate more asteroids."
+                .to_string(),
+        ));
+    }
+}
+
+fn scan(
+    mouse_input: Res<ButtonInput<MouseButton>>,
+    ship_query: Query<&Transform, With<MiningController>>,
+    asteroids_query: Query<&Transform, With<Asteroid>>,
+    mut notification_writer: EventWriter<Notification>,
+) {
+    if mouse_input.just_pressed(MouseButton::Right) {
+        for ship_transform in ship_query.iter() {
+            let scan_pos = ship_transform.translation;
+            let mut nearest_distance = f32::MAX;
+            for transform in asteroids_query.iter() {
+                let sq_distance = transform.translation.xy().distance_squared(scan_pos.xy());
+                if sq_distance < nearest_distance {
+                    nearest_distance = sq_distance;
+                }
+            }
+            if nearest_distance < 400.0 {
+                notification_writer.send(Notification("Asteroid detected".to_string()));
+            } else {
+                notification_writer.send(Notification(format!(
+                    "Nearest asteroid: {:.2} units away",
+                    nearest_distance,
+                )));
+            }
+        }
+    }
+}
+
+fn reveal_nearby_asteroids(
+    ship_query: Query<&Transform, With<MiningController>>,
+    asteroids_query: Query<(Entity, &Transform, &Visibility), With<Asteroid>>,
+    mut notification_writer: EventWriter<Notification>,
+    mut commands: Commands,
+) {
+    for ship_transform in ship_query.iter() {
+        for (entity, asteroid_transform, visability) in asteroids_query.iter() {
+            if matches!(visability, Visibility::Hidden)
+                && ship_transform
+                    .translation
+                    .xy()
+                    .distance_squared(asteroid_transform.translation.xy())
+                    < 400.0
+            {
+                notification_writer.send(Notification("Asteroid detected".to_string()));
+                commands
+                    .entity(entity)
+                    .insert(Visibility::Visible)
+                    .insert(Waypointed::new(ASTEROID_WAYPOINT_COLOR));
+            }
+        }
     }
 }

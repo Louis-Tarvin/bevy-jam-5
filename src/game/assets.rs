@@ -127,10 +127,12 @@ impl FromWorld for HandleMap<SoundtrackKey> {
 pub enum ObjectKey {
     ShipBody,
     ShipTurret,
+    MiningShip,
     Asteroid,
     Decoy,
     Enemy,
     Station,
+    Upgrade,
 }
 
 impl AssetKey for ObjectKey {
@@ -150,6 +152,10 @@ impl FromWorld for HandleMap<ObjectKey> {
                 asset_server.load("objects/ship.glb#Scene1"),
             ),
             (
+                ObjectKey::MiningShip,
+                asset_server.load("objects/ship.glb#Scene2"),
+            ),
+            (
                 ObjectKey::Asteroid,
                 asset_server.load("objects/asteroid.glb#Scene0"),
             ),
@@ -164,6 +170,10 @@ impl FromWorld for HandleMap<ObjectKey> {
             (
                 ObjectKey::Station,
                 asset_server.load("objects/wheel.glb#Scene0"),
+            ),
+            (
+                ObjectKey::Upgrade,
+                asset_server.load("objects/upgrade.glb#Scene0"),
             ),
         ]
         .into()

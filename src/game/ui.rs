@@ -107,6 +107,7 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
                 .with_children(|parent| {
                     parent.tooltip_label("WASD/Arrow keys - ship thrust");
                     parent.tooltip_label("Space/E (hold) - mine asteroid below the ship");
+                    parent.tooltip_label("Right click - scan for asteroids");
                     parent.tooltip_label(
                         "Held resources must be delivered to the base before they can be used",
                     );
@@ -166,20 +167,42 @@ pub fn draw_ui(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) 
             parent.dock().insert(BuildUi).with_children(|parent| {
                 parent.building_button(
                     "Decoy",
-                    "A decoy to distract enemies",
-                    5,
+                    "A decoy to divert enemies. Has high health to withstand attacks",
+                    BuildingType::Decoy.cost(),
                     BuildAction {
                         building_type: BuildingType::Decoy,
-                        cost: 5,
                     },
                 );
                 parent.building_button(
                     "Turret",
-                    "A turret to shoot enemies",
-                    20,
+                    "A stationary turret to shoot enemies. Has a short range and low health",
+                    BuildingType::Turret.cost(),
                     BuildAction {
                         building_type: BuildingType::Turret,
-                        cost: 20,
+                    },
+                );
+                parent.building_button(
+                    "Sniper",
+                    "A turret with a longer range and lower rate of fire",
+                    BuildingType::Sniper.cost(),
+                    BuildAction {
+                        building_type: BuildingType::Sniper,
+                    },
+                );
+                parent.building_button(
+                    "Mining Speed Upgrade",
+                    "Upgrades mining speed so long as the building is not destroyed",
+                    BuildingType::MiningUpgrade.cost(),
+                    BuildAction {
+                        building_type: BuildingType::MiningUpgrade,
+                    },
+                );
+                parent.building_button(
+                    "Fire Rate Upgrade",
+                    "Upgrades fire rate so long as the building is not destroyed",
+                    BuildingType::FireRateUpgrade.cost(),
+                    BuildAction {
+                        building_type: BuildingType::FireRateUpgrade,
                     },
                 );
             });

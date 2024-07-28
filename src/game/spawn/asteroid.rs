@@ -43,6 +43,8 @@ impl Percentage for Asteroid {
     }
 }
 
+pub const ASTEROID_WAYPOINT_COLOR: Color = Color::srgb(0.8, 0.6, 0.5);
+
 fn spawn_asteroid(
     trigger: Trigger<SpawnAsteroid>,
     mut commands: Commands,
@@ -66,8 +68,8 @@ fn spawn_asteroid(
     let mut entity = commands.spawn((
         Name::new("Asteroid"),
         Asteroid {
-            contained_resources: 12,
-            max_resources: 12,
+            contained_resources: 16,
+            max_resources: 16,
         },
         SceneBundle {
             scene: object_handles[&ObjectKey::Asteroid].clone_weak(),
@@ -95,7 +97,7 @@ fn spawn_asteroid(
         StateScoped(Screen::Playing),
     ));
     if trigger.event().is_visible {
-        entity.insert(Waypointed::new(Color::srgb(0.7, 0.4, 0.5)));
+        entity.insert(Waypointed::new(ASTEROID_WAYPOINT_COLOR));
     }
 }
 

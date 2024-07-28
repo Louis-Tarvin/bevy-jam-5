@@ -10,6 +10,7 @@ use super::{
     audio::sfx::PlaySfx,
     phase::GamePhase,
     spawn::{bullet::Bullet, player::CombatShipTurret},
+    upgrades::Upgrades,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -31,6 +32,10 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
         handle_enemy_bullet_collision.in_set(AppSet::PostUpdate),
+    );
+    app.add_systems(
+        Update,
+        update_attack_time.run_if(resource_changed::<Upgrades>),
     );
 }
 
@@ -155,6 +160,15 @@ fn handle_enemy_bullet_collision(
         if bullets.contains(contacts.entity1) || bullets.contains(contacts.entity2) {
             commands.entity(contacts.entity1).despawn_recursive();
             commands.entity(contacts.entity2).despawn_recursive();
+        }
+    }
+}
+
+fn update_attack_time(mut controller_query: Query<&mut CombatController>, upgrades: Res<Upgrades>) {
+    for mut controller in &mut controller_query {
+        controller.attack_time = 1.0 / (1.0 + upgrades.fire_rate as f32);
+        if upgrades.fire_rate > 0 {
+            controller.attack_time += 0.2;
         }
     }
 }

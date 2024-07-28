@@ -2,7 +2,7 @@ use bevy::{input::mouse::MouseMotion, prelude::*};
 
 use crate::AppSet;
 
-use super::{build::BuildLocationMarker, phase::GamePhase};
+use super::{build::BuildLocationMarker, movement::Velocity, phase::GamePhase};
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<CameraTarget>();
@@ -17,6 +17,7 @@ pub(super) fn plugin(app: &mut App) {
             .run_if(in_state(GamePhase::Build))
             .in_set(AppSet::Update),
     );
+    app.add_systems(Update, update_velocity_offset.in_set(AppSet::Update));
     app.add_systems(Update, move_camera_to_target.in_set(AppSet::PostUpdate));
     app.add_systems(
         Update,
@@ -85,6 +86,20 @@ fn reset_camera_target(
                 target_transform.translation.x = 0.0;
                 target_transform.translation.y = 0.0;
             }
+        }
+    }
+}
+
+#[derive(Component, Debug)]
+pub struct OffsetDistanceByVelocity(pub f32);
+
+fn update_velocity_offset(
+    mut target_query: Query<(&mut Transform, &OffsetDistanceByVelocity, &Parent)>,
+    velocity_query: Query<&Velocity>,
+) {
+    for (mut target_transform, offset, parent) in target_query.iter_mut() {
+        if let Ok(velocity) = velocity_query.get(parent.get()) {
+            target_transform.translation.z = offset.0 + velocity.0.length() * 0.3;
         }
     }
 }

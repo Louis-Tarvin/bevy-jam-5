@@ -12,8 +12,8 @@ use super::{
     notifications::Notification,
     phase::GamePhase,
     spawn::{
-        asteroid::Asteroid,
-        building::{BuildingType, SpawnBuilding},
+        asteroid::{Asteroid, ASTEROID_WAYPOINT_COLOR},
+        building::{BuildingType, Destructable, SpawnBuilding},
     },
     waypoint::Waypointed,
 };
@@ -52,6 +52,8 @@ pub struct BuildLocationMarker {
     pub mode: Option<BuildingType>,
     just_clicked: bool,
     click_debounce: Timer,
+    white_material: Handle<StandardMaterial>,
+    red_material: Handle<StandardMaterial>,
 }
 
 #[derive(Event, Debug)]
@@ -83,10 +85,16 @@ fn init_marker(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let white_material = materials.add(Color::WHITE);
+    let red_material = materials.add(Color::srgb(1.0, 0.0, 0.0));
     commands.spawn((
-        BuildLocationMarker::default(),
+        BuildLocationMarker {
+            white_material: white_material.clone(),
+            red_material,
+            ..Default::default()
+        },
         PbrBundle {
-            mesh: meshes.add(Mesh::from(Cuboid::default())),
+            mesh: meshes.add(Mesh::from(Cuboid::new(2.0, 2.0, 2.0))),
             material: materials.add(Color::WHITE),
             visibility: Visibility::Hidden,
             ..Default::default()
@@ -147,18 +155,50 @@ fn exit_build_mode_on_esc(
 }
 
 fn update_marker(
-    mut marker_query: Query<(&mut BuildLocationMarker, &mut Transform, &mut Visibility)>,
+    mut marker_query: Query<
+        (
+            &mut BuildLocationMarker,
+            &mut Transform,
+            &mut Visibility,
+            &mut Handle<StandardMaterial>,
+        ),
+        Changed<BuildLocationMarker>,
+    >,
     mut commands: Commands,
+    buildings_query: Query<&Transform, (With<Destructable>, Without<BuildLocationMarker>)>,
+    mut notification_writer: EventWriter<Notification>,
 ) {
-    for (mut marker, mut transform, mut visibility) in marker_query.iter_mut() {
+    for (mut marker, mut transform, mut visibility, mut material) in marker_query.iter_mut() {
         transform.translation = marker.mouse_world_pos.extend(0.0);
-        if marker.just_clicked {
-            if let Some(building_type) = marker.mode.take() {
-                commands.trigger(SpawnBuilding {
-                    building_type,
-                    position: marker.mouse_world_pos.extend(0.0),
-                });
-                commands.trigger(PlaySfx::Key(SfxKey::Build));
+        let mut can_build = true;
+        for building_transform in buildings_query.iter() {
+            if building_transform
+                .translation
+                .xy()
+                .distance_squared(marker.mouse_world_pos)
+                < 100.0
+            {
+                can_build = false;
+                break;
+            }
+        }
+        if can_build {
+            *material = marker.white_material.clone();
+        } else {
+            *material = marker.red_material.clone();
+        }
+        if marker.just_clicked && marker.mode.is_some() {
+            if can_build {
+                if let Some(building_type) = marker.mode.take() {
+                    commands.trigger(SpawnBuilding {
+                        building_type,
+                        position: marker.mouse_world_pos.extend(0.0),
+                    });
+                    commands.trigger(PlaySfx::Key(SfxKey::Build));
+                }
+            } else {
+                notification_writer
+                    .send(Notification("Too close to existing structure".to_string()));
             }
         }
         *visibility = if marker.mode.is_some() {
@@ -172,7 +212,6 @@ fn update_marker(
 #[derive(Component, Debug)]
 pub struct BuildAction {
     pub building_type: BuildingType,
-    pub cost: u32,
 }
 
 fn handle_build_action(
@@ -183,11 +222,11 @@ fn handle_build_action(
 ) {
     for (interaction, action) in &mut button_query {
         if matches!(interaction, Interaction::Pressed) {
-            if resources.delivered < action.cost {
+            if resources.delivered < action.building_type.cost() {
                 notification_writer.send(Notification("Not enough resources".to_string()));
                 continue;
             }
-            resources.delivered -= action.cost;
+            resources.delivered -= action.building_type.cost();
             event_writer.send(EnterBuildMode(action.building_type));
         }
     }
@@ -205,18 +244,18 @@ fn scan(
         let scan_pos = marker.mouse_world_pos;
         let mut nearest_distance = f32::MAX;
         for (entity, transform) in asteroids_query.iter() {
-            let distance = transform.translation.xy().distance(scan_pos);
-            if distance < nearest_distance {
-                nearest_distance = distance;
+            let sq_distance = transform.translation.xy().distance_squared(scan_pos);
+            if sq_distance < nearest_distance {
+                nearest_distance = sq_distance;
             }
-            if distance < 20.0 {
+            if sq_distance < 400.0 {
                 commands
                     .entity(entity)
                     .insert(Visibility::Visible)
-                    .insert(Waypointed::new(Color::srgb(0.7, 0.4, 0.5)));
+                    .insert(Waypointed::new(ASTEROID_WAYPOINT_COLOR));
             }
         }
-        if nearest_distance < 20.0 {
+        if nearest_distance < 400.0 {
             notification_writer.send(Notification("Asteroid detected".to_string()));
         } else {
             notification_writer.send(Notification(format!(

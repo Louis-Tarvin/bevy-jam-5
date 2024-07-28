@@ -6,6 +6,7 @@ use bevy_health_bar3d::configuration::{BarHeight, BarSettings};
 use crate::{
     game::{
         assets::{HandleMap, ObjectKey},
+        camera::OffsetDistanceByVelocity,
         combat::CombatController,
         mining::{InteractionProgressBar, MiningController},
         movement::{MovementController, Velocity},
@@ -40,7 +41,7 @@ fn spawn_combat_ship(
             Name::new("CombatShip"),
             SceneBundle {
                 scene: object_handles[&ObjectKey::ShipBody].clone_weak(),
-                transform: Transform::from_xyz(10.0, -10.0, 0.0),
+                transform: Transform::from_xyz(20.0, -10.0, 0.0),
                 ..Default::default()
             },
             CombatShip,
@@ -61,8 +62,9 @@ fn spawn_combat_ship(
 
             parent.spawn((
                 Name::new("CameraTarget"),
-                Transform::from_translation(Vec3::new(0.0, 0.0, 100.0)),
+                Transform::from_translation(Vec3::new(0.0, 0.0, 120.0)),
                 GlobalTransform::default(),
+                OffsetDistanceByVelocity(100.0),
                 CombatShipCameraTarget,
             ));
         });
@@ -86,8 +88,8 @@ fn spawn_mining_ship(
         .spawn((
             Name::new("MiningShip"),
             SceneBundle {
-                scene: object_handles[&ObjectKey::ShipBody].clone_weak(),
-                transform: Transform::from_xyz(-10.0, -10.0, 0.0),
+                scene: object_handles[&ObjectKey::MiningShip].clone_weak(),
+                transform: Transform::from_xyz(-20.0, -10.0, 0.0),
                 ..Default::default()
             },
             MiningShip,
@@ -106,7 +108,7 @@ fn spawn_mining_ship(
         .with_children(|parent| {
             parent.spawn((
                 Name::new("CameraTarget"),
-                Transform::from_translation(Vec3::new(0.0, 0.0, 150.0)),
+                Transform::from_translation(Vec3::new(0.0, 0.0, 100.0)),
                 GlobalTransform::default(),
                 MiningShipCameraTarget,
             ));

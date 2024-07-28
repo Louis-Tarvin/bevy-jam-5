@@ -211,7 +211,7 @@ impl<T: Spawn> Widgets for T {
                 TextBundle::from_section(
                     name,
                     TextStyle {
-                        font_size: 20.0,
+                        font_size: 18.0,
                         color: BUTTON_TEXT,
                         ..default()
                     },
@@ -233,7 +233,7 @@ impl<T: Spawn> Widgets for T {
                 TextBundle::from_section(
                     format!("Cost: {}", cost),
                     TextStyle {
-                        font_size: 13.0,
+                        font_size: 12.0,
                         color: LABEL_TEXT,
                         ..default()
                     },
@@ -245,7 +245,7 @@ impl<T: Spawn> Widgets for T {
                     ButtonBundle {
                         style: Style {
                             width: Px(150.0),
-                            height: Px(45.0),
+                            height: Px(40.0),
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
                             ..default()

@@ -3,7 +3,10 @@
 use bevy::prelude::*;
 
 use super::Screen;
-use crate::ui::prelude::*;
+use crate::{
+    game::{assets::SoundtrackKey, audio::soundtrack::PlaySoundtrack},
+    ui::prelude::*,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Title), enter_title);
@@ -35,6 +38,8 @@ fn enter_title(mut commands: Commands) {
             #[cfg(not(target_family = "wasm"))]
             children.button("Exit").insert(TitleAction::Exit);
         });
+
+    commands.trigger(PlaySoundtrack::Key(SoundtrackKey::Gameplay))
 }
 
 fn handle_title_action(

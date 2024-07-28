@@ -23,6 +23,7 @@ pub mod phase;
 pub mod spawn;
 pub mod turret;
 pub mod ui;
+pub mod upgrades;
 pub mod util;
 pub mod waypoint;
 
@@ -33,9 +34,9 @@ pub(super) fn plugin(app: &mut App) {
         HealthBarPlugin::<InteractionProgressBar>::default(),
         HealthBarPlugin::<Asteroid>::default(),
         notifications::plugin,
+        audio::plugin,
     ));
     app.add_plugins((
-        audio::plugin,
         assets::plugin,
         movement::plugin,
         phase::plugin,
@@ -50,5 +51,6 @@ pub(super) fn plugin(app: &mut App) {
         build::plugin,
         turret::plugin,
         waypoint::plugin,
+        upgrades::plugin,
     ));
 }

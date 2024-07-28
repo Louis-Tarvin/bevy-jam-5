@@ -18,7 +18,6 @@ pub(super) fn plugin(app: &mut App) {
     app.insert_resource(ClearColor(Color::BLACK));
     app.insert_resource(HoldToExitTimer(0.0));
 
-    // TODO: don't exit on escape
     app.add_systems(
         Update,
         return_to_title_screen.run_if(in_state(Screen::Playing)),
