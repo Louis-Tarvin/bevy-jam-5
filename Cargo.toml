@@ -1,5 +1,5 @@
 [package]
-name = "bevy-jam-5"
+name = "tri-phase-defense"
 authors = ["Louis Tarvin <louis.tarvin@gmail.com>"]
 version = "0.1.0"
 edition = "2021"

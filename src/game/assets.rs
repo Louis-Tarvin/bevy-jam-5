@@ -23,6 +23,7 @@ pub enum ImageKey {
     SpinnerCore,
     SpinnerFrame,
     Waypoint,
+    Title,
 }
 
 impl AssetKey for ImageKey {
@@ -55,6 +56,15 @@ impl FromWorld for HandleMap<ImageKey> {
                 ImageKey::Waypoint,
                 asset_server.load_with_settings(
                     "images/waypoint.png",
+                    |settings: &mut ImageLoaderSettings| {
+                        settings.sampler = ImageSampler::default();
+                    },
+                ),
+            ),
+            (
+                ImageKey::Title,
+                asset_server.load_with_settings(
+                    "images/title.png",
                     |settings: &mut ImageLoaderSettings| {
                         settings.sampler = ImageSampler::default();
                     },

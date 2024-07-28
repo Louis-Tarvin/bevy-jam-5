@@ -17,12 +17,12 @@ on:
 # Configure constants for this workflow.
 env:
   # The base filename of the binary produced by `cargo build`.
-  BINARY: bevy-jam-5
+  BINARY: tri-phase-defense
   # The name to use for the packaged application produced by this workflow.
-  PACKAGE_NAME: bevy-jam-5
+  PACKAGE_NAME: tri-phase-defense
   # The itch.io page to upload to, in the format: `user-name/project-name`.
   # Comment this out to disable.
-  ITCH_TARGET: louisNivrat/bevy-jam-5
+  ITCH_TARGET: louisNivrat/tri-phase-defense
   # The organization or author that owns the rights to the game.
   OWNER: louisNivrat
   # The path to the assets directory.

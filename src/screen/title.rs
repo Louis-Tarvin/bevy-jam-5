@@ -4,7 +4,10 @@ use bevy::prelude::*;
 
 use super::Screen;
 use crate::{
-    game::{assets::SoundtrackKey, audio::soundtrack::PlaySoundtrack},
+    game::{
+        assets::{HandleMap, ImageKey, SoundtrackKey},
+        audio::soundtrack::PlaySoundtrack,
+    },
     ui::prelude::*,
 };
 
@@ -27,11 +30,21 @@ enum TitleAction {
     Exit,
 }
 
-fn enter_title(mut commands: Commands) {
+fn enter_title(mut commands: Commands, image_handles: Res<HandleMap<ImageKey>>) {
     commands
         .ui_root()
         .insert(StateScoped(Screen::Title))
         .with_children(|children| {
+            children.spawn((ImageBundle {
+                style: Style {
+                    width: Val::Px(200.0),
+                    height: Val::Auto,
+                    margin: UiRect::all(Val::Px(10.0)),
+                    ..Default::default()
+                },
+                image: UiImage::new(image_handles.get(&ImageKey::Title).unwrap().clone()),
+                ..Default::default()
+            },));
             children.button("Play").insert(TitleAction::Play);
             children.button("Credits").insert(TitleAction::Credits);
 
